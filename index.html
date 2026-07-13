@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Voice Lab — Luyện nói tiếng Anh</title>
+
+<!-- PWA: cho phép cài lên màn hình chính điện thoại -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1B2A5B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Voice Lab">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+:root{
+  --ink:#161A2E;
+  --ink-soft:#454A68;
+  --muted:#8388A6;
+  --bg:#F3F4FA;
+  --surface:#FFFFFF;
+  --line:#E7E8F3;
+  --hero-a:#1B2A5B;
+  --hero-b:#0E7C77;
+  --accent-a:#FF6B4A;
+  --accent-b:#FFB648;
+  --accent-soft:#FFEDE3;
+  --teal:#0E9C90;
+  --teal-soft:#DDF4F0;
+  --amber:#E3A008;
+  --amber-soft:#FDF1D6;
+  --danger:#E5484D;
+  --danger-soft:#FDE4E4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 0 40px;position:relative}
+
+/* hero header */
+.hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%);
+  padding:20px 18px 46px;
+  border-radius:0 0 32px 32px;
+  color:#fff;
+}
+.hero::before{
+  content:'';position:absolute;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);
+  top:-90px;right:-60px;
+}
+.hero::after{
+  content:'';position:absolute;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,74,.28),transparent 70%);
+  bottom:-90px;left:-50px;
+}
+.top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:1}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
+  color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;letter-spacing:-.02em;
+  box-shadow:0 6px 14px rgba(255,107,74,.35);
+}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.brand-sub{font-size:11.5px;color:rgba(255,255,255,.72)}
+.level-row{position:relative;margin-top:14px;z-index:1}
+.level-switch{display:flex;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:3px;backdrop-filter:blur(6px)}
+.level-btn{flex:1;border:none;background:transparent;font-size:10.5px;font-weight:800;padding:8px 1px;border-radius:999px;color:rgba(255,255,255,.75);cursor:pointer;text-align:center}
+.level-btn.active{background:#fff;color:var(--hero-a)}
+
+.name-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:16px;z-index:1}
+.id-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:8px;z-index:1}
+.id-input{
+  flex:0 0 118px;height:36px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 11px;
+  font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
+}
+.id-input::placeholder{color:rgba(255,255,255,.6)}
+.id-input:disabled{opacity:.75}
+.verify-btn{
+  height:36px;padding:0 13px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);
+  color:#fff;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;
+}
+.verify-note{font-size:11px;margin-top:6px;color:rgba(255,255,255,.78);z-index:1;position:relative}
+.verify-note.ok{color:#B9F5E5}
+.verify-note.err{color:#FFD3D0}
+.name-input{
+  flex:1;height:40px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 13px;
+  font-size:13px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
+}
+.name-input::placeholder{color:rgba(255,255,255,.65)}
+.name-input:focus{border-color:#fff;background:rgba(255,255,255,.22)}
+.log-status{
+  width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+  font-size:9px;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+}
+.log-status.ok{background:#2FD3A8;border-color:#2FD3A8}
+.log-status.err{background:var(--danger);border-color:var(--danger)}
+.log-status.off{background:rgba(255,255,255,.2)}
+
+/* streak + lecturer button */
+.top-right{display:flex;align-items:center;gap:8px;z-index:1;position:relative}
+.streak-badge{
+  display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);
+  border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;color:#fff;backdrop-filter:blur(6px);
+}
+.gv-btn{
+  width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);
+  color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:grid;place-items:center;
+}
+
+/* iOS/Safari note */
+.ios-note{
+  display:none;background:var(--amber-soft);color:#7A5A00;font-size:11.5px;line-height:1.5;
+  border-radius:14px;padding:10px 13px;margin:0 4px 12px;
+}
+.ios-note.show{display:block}
+
+/* word-level highlight in result */
+.word-chip{display:inline-block;padding:1px 6px;border-radius:6px;margin:2px 3px 0 0;font-size:12.5px;font-weight:700}
+.word-ok{background:var(--teal-soft);color:#0B5F60}
+.word-bad{background:var(--danger-soft);color:#8E2A32}
+
+/* lecturer dashboard modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(15,17,34,.55);z-index:50;
+  align-items:flex-end;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal-card{
+  width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--surface);
+  border-radius:24px 24px 0 0;padding:20px 18px 26px;box-shadow:0 -10px 40px rgba(0,0,0,.25);
+}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-title{font-size:16px;font-weight:800}
+.modal-close{border:none;background:var(--bg);width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:var(--ink-soft)}
+.gv-login{display:flex;flex-direction:column;gap:10px}
+.gv-login input{height:42px;border:1px solid var(--line);border-radius:12px;padding:0 13px;font-size:13px}
+.gv-error{color:var(--danger);font-size:12px;display:none}
+.gv-error.show{display:block}
+.gv-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.gv-summary-row .n{font-weight:700;color:var(--ink)}
+.gv-summary-row .s{color:var(--muted);font-size:11.5px}
+.gv-stat-cards{display:flex;gap:8px;margin-bottom:10px}
+.gv-stat{flex:1;background:var(--bg);border-radius:14px;padding:10px;text-align:center}
+.gv-stat b{display:block;font-size:18px}
+.gv-stat span{font-size:10.5px;color:var(--muted)}
+.gv-export-btn{width:100%;margin-top:14px}
+.gv-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:20px 0}
+
+/* content sheet overlapping hero */
+.content{position:relative;margin:-28px 14px 0;z-index:2}
+
+/* topic filter */
+.topic-row{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 2px 14px;margin:0 4px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.topic-row::-webkit-scrollbar{display:none}
+.topic-chip{
+  flex:0 0 auto;padding:8px 15px;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+  transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+.topic-chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* progress rail */
+.rail{display:flex;gap:5px;margin:0 4px 14px}
+.rail-seg{flex:1;height:5px;border-radius:4px;background:var(--line);transition:background .2s ease}
+.rail-seg.done{background:var(--teal)}
+.rail-seg.current{background:linear-gradient(90deg,var(--accent-a),var(--accent-b))}
+
+/* main card */
+.stage{
+  background:var(--surface);
+  border-radius:24px;
+  padding:24px 20px 20px;
+  box-shadow:0 1px 2px rgba(22,26,46,.04),0 20px 40px rgba(22,26,46,.09);
+  animation:cardIn .25s ease;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:14px;
+}
+.eyebrow .tag{background:var(--teal-soft);color:#0B6A61;padding:5px 10px;border-radius:999px;font-weight:800}
+.sentence{
+  font-size:22px;line-height:1.34;font-weight:800;letter-spacing:-.02em;
+  margin:0 0 8px;color:var(--ink);
+}
+.translation{font-size:13.5px;color:var(--muted);margin:0 0 16px;font-style:italic}
+
+/* voice gender toggle */
+.voice-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.voice-label{font-size:12px;color:var(--muted);font-weight:700}
+.voice-toggle{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.voice-fallback-note{
+  display:none;background:var(--amber-soft);color:#7A5A00;font-size:11px;line-height:1.5;
+  border-radius:12px;padding:8px 12px;margin:-8px 0 14px;
+}
+.voice-fallback-note.show{display:block}
+.voice-btn{border:none;background:transparent;font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:999px;color:var(--muted);cursor:pointer}
+.voice-btn.active{background:var(--ink);color:#fff}
+
+.row-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.btn{
+  height:48px;border-radius:14px;border:1.5px solid transparent;font-size:13.5px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;transition:transform .08s ease,box-shadow .15s ease,border-color .15s ease,opacity .15s ease;
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-ghost{background:var(--bg);border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:#CBCEE8}
+.btn-teal{
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));color:#fff;
+  box-shadow:0 8px 18px rgba(255,107,74,.32);
+}
+.btn-teal:hover{filter:brightness(1.04)}
+
+/* recorder */
+.recorder{
+  background:linear-gradient(180deg,#FAFAFF,var(--bg));border:1px solid var(--line);border-radius:18px;
+  padding:16px 15px;margin-bottom:14px;
+}
+.rec-row{display:flex;align-items:center;gap:14px}
+.rec-btn{
+  flex:0 0 auto;width:62px;height:62px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));border:none;color:#fff;font-size:22px;
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 20px rgba(255,107,74,.35);
+  transition:transform .1s ease,box-shadow .2s ease;
+}
+.rec-btn.recording{
+  background:linear-gradient(135deg,var(--danger),#FF7A6E);
+  animation:pulse 1.3s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(229,72,77,.35)}
+  70%{box-shadow:0 0 0 16px rgba(229,72,77,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}
+}
+.rec-viz{flex:1;height:44px;position:relative}
+canvas#wave{width:100%;height:44px;display:block}
+.rec-time{
+  font-family:"SFMono-Regular",Menlo,Consolas,monospace;
+  font-size:13px;color:var(--ink-soft);min-width:42px;text-align:right;font-weight:700;
+}
+.rec-state{font-size:12.5px;color:var(--muted);margin-top:12px;min-height:16px}
+.playback{display:none;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.playback.show{display:flex}
+.play-btn{
+  flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--ink);color:#fff;border:none;
+  display:grid;place-items:center;cursor:pointer;font-size:13px;
+}
+.playback-label{font-size:12.5px;color:var(--muted);flex:1;font-weight:600}
+.redo-btn{background:none;border:none;color:var(--teal);font-size:12.5px;font-weight:800;cursor:pointer}
+
+/* typed fallback */
+.fallback{display:none;margin-bottom:14px}
+.fallback.show{display:block}
+.fallback-note{
+  display:flex;gap:8px;background:var(--amber-soft);border:1px solid #F1D98A;border-radius:14px;
+  padding:11px 12px;font-size:12px;color:#7A5A00;line-height:1.45;margin-bottom:10px;
+}
+.input-field{
+  width:100%;height:48px;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;
+  font-size:15px;background:#fff;color:var(--ink);outline:none;
+}
+.input-field:focus{border-color:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+
+.score-btn{width:100%}
+
+/* result */
+.result{display:none;margin-top:14px;border-radius:18px;padding:16px;border:1px solid var(--line);background:linear-gradient(180deg,#FAFAFF,var(--bg))}
+.result.show{display:block;animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.result-head{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.score-ring{
+  width:46px;height:46px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;position:relative;
+}
+.score-ring::before{
+  content:'';position:absolute;inset:4px;border-radius:50%;background:var(--surface);
+}
+.score-ring span{position:relative;font-size:11.5px;font-weight:800;color:var(--ink)}
+.result-titles{flex:1}
+.result-label{font-weight:800;font-size:14px;color:var(--ink)}
+.result-frac{font-size:11.5px;color:var(--muted);font-weight:700}
+.result-msg{font-size:13px;line-height:1.5;color:var(--ink-soft)}
+.result-detail{font-size:12.3px;color:var(--muted);margin-top:8px;line-height:1.55}
+.transcript-note{font-size:11.5px;color:var(--muted);margin-top:9px;font-style:italic}
+
+/* nav */
+.nav{display:flex;justify-content:space-between;margin-top:18px}
+.nav-btn{background:none;border:none;font-size:13px;font-weight:800;color:var(--ink-soft);cursor:pointer;padding:8px 4px}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.nav-btn.next{color:var(--teal)}
+
+/* summary */
+.summary{display:none}
+.summary.show{display:block;animation:cardIn .25s ease}
+.summary-card{background:var(--surface);border-radius:24px;padding:30px 22px;text-align:center;box-shadow:0 20px 40px rgba(22,26,46,.09)}
+.summary-score{
+  font-size:48px;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.summary-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800;margin-top:2px}
+.summary-list{margin-top:22px;text-align:left}
+.summary-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.summary-row .s-sentence{color:var(--ink-soft);max-width:70%;font-weight:600}
+.restart-btn{margin-top:22px;width:100%}
+
+.footer{margin-top:22px;text-align:center;padding:14px 24px 0}
+.footer p{margin:0 auto;max-width:38ch;font-size:11.5px;line-height:1.55;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hero">
+  <div class="top">
+    <div class="brand">
+      <div class="brand-mark">VL</div>
+      <div>
+        <div class="brand-name">Voice Lab</div>
+        <div class="brand-sub">Luyện nói tiếng Anh có chấm điểm</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="streak-badge" id="streakBadge" title="Số ngày luyện liên tiếp">🔥 0</div>
+      <button class="gv-btn" id="gvBtn" onclick="openDashboard()" title="Bảng điều khiển giảng viên">GV</button>
+    </div>
+  </div>
+
+  <div class="level-row">
+    <div class="level-switch" id="levelSwitch">
+      <button class="level-btn" data-level="A1" onclick="switchLevel('A1')">A1</button>
+      <button class="level-btn active" data-level="A2" onclick="switchLevel('A2')">A2</button>
+      <button class="level-btn" data-level="B1" onclick="switchLevel('B1')">B1</button>
+      <button class="level-btn" data-level="B2" onclick="switchLevel('B2')">B2</button>
+      <button class="level-btn" data-level="C1" onclick="switchLevel('C1')">C1</button>
+      <button class="level-btn" data-level="C2" onclick="switchLevel('C2')">C2</button>
+      <button class="level-btn" data-level="NN" onclick="switchLevel('NN')">Ngành</button>
+    </div>
+  </div>
+
+  <div class="id-row">
+    <input id="studentIdInput" class="id-input" type="text" placeholder="MSSV / Mã GV" autocomplete="off" oninput="onIdInput()">
+    <button class="verify-btn" id="verifyBtn" onclick="verifyStudentId()">Xác nhận</button>
+  </div>
+  <div class="name-row">
+    <input id="userName" class="name-input" type="text" placeholder="Tên người học (để lưu log)" oninput="onNameInput()">
+    <span class="log-status" id="logStatus">●</span>
+  </div>
+  <div class="verify-note" id="verifyNote">Chưa xác nhận — có thể tự gõ tên bên dưới, hoặc nhập MSSV/Mã GV rồi bấm Xác nhận để đăng nhập chính xác hơn.</div>
+</div>
+
+<div class="content">
+  <div class="topic-row" id="topicRow"></div>
+  <div class="rail" id="rail"></div>
+
+  <div class="stage" id="stage">
+    <div class="eyebrow">
+      <span id="eyebrowLabel">Câu 1 / 8</span>
+      <span class="tag" id="eyebrowCat">Giới thiệu bản thân</span>
+    </div>
+    <p class="sentence" id="sentenceText">—</p>
+    <p class="translation" id="sentenceTranslation">—</p>
+
+    <div class="voice-row">
+      <span class="voice-label">🔊 Giọng đọc mẫu</span>
+      <div class="voice-toggle" id="voiceToggle">
+        <button class="voice-btn active" data-voice="female" onclick="setVoicePref('female')">Nữ</button>
+        <button class="voice-btn" data-voice="male" onclick="setVoicePref('male')">Nam</button>
+      </div>
+    </div>
+    <div class="voice-fallback-note" id="voiceFallbackNote">ℹ️ Thiết bị này chỉ có 1 giọng đọc hệ thống (không có giọng nam/nữ riêng), Voice Lab đã tự chỉnh cao độ giọng để nghe khác nhau giữa Nam/Nữ.</div>
+
+    <div class="row-btns">
+      <button class="btn btn-ghost" id="listenBtn" onclick="playSample()"><span>▶</span> Nghe mẫu</button>
+      <button class="btn btn-teal" id="scoreBtn" onclick="handleScore()" disabled><span>✓</span> Chấm điểm</button>
+    </div>
+
+    <div class="recorder" id="recorderPanel">
+      <div class="rec-row">
+        <button class="rec-btn" id="recBtn" onclick="toggleRecording()" aria-label="Ghi âm">🎤</button>
+        <div class="rec-viz"><canvas id="wave"></canvas></div>
+        <div class="rec-time" id="recTime">0:00</div>
+      </div>
+      <div class="rec-state" id="recState">Bấm mic để bắt đầu ghi âm giọng đọc của bạn.</div>
+      <div class="playback" id="playback">
+        <button class="play-btn" id="playBtn" onclick="togglePlayback()">▶</button>
+        <span class="playback-label" id="playbackLabel">Bản ghi của bạn</span>
+        <button class="redo-btn" onclick="toggleRecording()">Ghi lại</button>
+      </div>
+    </div>
+
+    <div class="ios-note" id="iosNote">📱 Trên iPhone/iPad (Safari), trình duyệt chưa hỗ trợ tự nhận diện giọng nói khi ghi âm, nên bài sẽ tự chuyển sang chế độ gõ/nói qua micro bàn phím bên dưới. Đây là giới hạn của Safari, không phải lỗi của app — chấm điểm vẫn chính xác bình thường.</div>
+
+    <div class="fallback" id="fallbackPanel">
+      <div class="fallback-note">⌨️ Thiết bị/trình duyệt này chặn nhận diện giọng nói tự động. Bấm vào ô bên dưới, dùng icon micro trên bàn phím (Gboard) để nói, chữ sẽ tự điền vào — vẫn chấm điểm được bình thường.</div>
+      <input id="typedInput" class="input-field" type="text" autocomplete="off" spellcheck="false"
+        placeholder="Nói qua micro bàn phím hoặc gõ câu bạn vừa đọc..."
+        oninput="onTypedInput()" onkeydown="if(event.key==='Enter')handleScore()">
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="nav">
+      <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)" disabled>← Câu trước</button>
+      <button class="nav-btn next" id="nextBtn" onclick="goTo(current+1)">Câu tiếp →</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="summary-card">
+      <div class="summary-score" id="summaryScore">0%</div>
+      <div class="summary-label">Điểm trung bình</div>
+      <div class="summary-list" id="summaryList"></div>
+      <button class="btn btn-teal restart-btn" onclick="restart()">Luyện lại từ đầu</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p><strong>Mẹo:</strong> đọc chậm, rõ từng từ. Nếu điểm thấp, bấm Ghi lại và thử lại — phản xạ tốt hơn sau vài lần luyện.</p>
+  </div>
+</div>
+</div>
+
+<!-- Lecturer dashboard modal -->
+<div class="modal-overlay" id="gvModal" onclick="if(event.target===this) closeDashboard()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Bảng điều khiển giảng viên</div>
+      <button class="modal-close" onclick="closeDashboard()">✕</button>
+    </div>
+
+    <div id="gvLoginView" class="gv-login">
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 4px">Nhập mã truy cập giảng viên để xem tổng hợp điểm sinh viên (dữ liệu lấy từ Google Sheet đã cấu hình).</p>
+      <input id="gvTokenInput" type="password" placeholder="Mã truy cập giảng viên" autocomplete="off">
+      <div class="gv-error" id="gvError">Mã truy cập không đúng, hoặc chưa cấu hình Apps Script.</div>
+      <button class="btn btn-teal" onclick="submitGvToken()">Đăng nhập</button>
+    </div>
+
+    <div id="gvDataView" style="display:none">
+      <div class="gv-stat-cards">
+        <div class="gv-stat"><b id="gvStatCount">0</b><span>Sinh viên</span></div>
+        <div class="gv-stat"><b id="gvStatAvg">0%</b><span>Điểm TB chung</span></div>
+        <div class="gv-stat"><b id="gvStatSessions">0</b><span>Lượt luyện</span></div>
+      </div>
+      <div id="gvList"></div>
+      <button class="btn btn-ghost gv-export-btn" onclick="exportGvCsv()">⬇ Xuất CSV</button>
+      <button class="btn btn-ghost gv-export-btn" onclick="refreshGvData()">↻ Tải lại dữ liệu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Apps Script logging ---------- */
+// Sau khi deploy Code.gs làm Web App, dán URL /exec vào đây:
+const LOG_ENDPOINT = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+let userName = "";
+let studentId = "";
+let verifiedId = null;   // khác null khi MSSV đã được xác nhận đúng
+let verifiedClass = "";
+
+function onIdInput(){
+  studentId = document.getElementById('studentIdInput').value.trim();
+  if(verifiedId !== null && studentId !== verifiedId){
+    // người dùng sửa lại mã sau khi đã xác nhận -> huỷ trạng thái xác nhận cũ
+    verifiedId = null; verifiedClass = "";
+    document.getElementById('userName').disabled = false;
+    setVerifyNote('Mã đã thay đổi — bấm Xác nhận lại.', '');
+  }
+}
+
+function setVerifyNote(text, cls){
+  const el = document.getElementById('verifyNote');
+  el.textContent = text;
+  el.className = 'verify-note' + (cls ? ' '+cls : '');
+}
+
+function verifyStudentId(){
+  if(!studentId){
+    setVerifyNote('Hãy nhập MSSV hoặc mã giảng viên trước khi xác nhận.', 'err');
+    return;
+  }
+  if(!logIsConfigured()){
+    setVerifyNote('Chưa cấu hình Apps Script nên chưa thể tra danh sách — vẫn dùng được app, cứ gõ tên thủ công bên dưới.', 'err');
+    return;
+  }
+  setVerifyNote('Đang kiểm tra...', '');
+  fetch(LOG_ENDPOINT + '?action=verify&id=' + encodeURIComponent(studentId))
+    .then(res=>res.json())
+    .then(data=>{
+      if(data && data.status==='ok' && data.name){
+        verifiedId = studentId;
+        verifiedClass = data.class || '';
+        userName = data.name;
+        const nameInput = document.getElementById('userName');
+        nameInput.value = data.name;
+        nameInput.disabled = true;
+        setVerifyNote('Đã xác nhận: ' + data.name + (verifiedClass ? ' — Lớp ' + verifiedClass : ''), 'ok');
+        renderStreakBadge();
+      } else if(data && data.status==='no_roster'){
+        setVerifyNote('Trường chưa cấu hình danh sách MSSV — cứ gõ tên thủ công bên dưới.', 'err');
+      } else {
+        setVerifyNote('Không tìm thấy MSSV/Mã GV này. Kiểm tra lại hoặc gõ tên thủ công.', 'err');
+      }
+    })
+    .catch(()=>{
+      setVerifyNote('Không kết nối được để kiểm tra. Vẫn dùng được app, cứ gõ tên thủ công.', 'err');
+    });
+}
+
+function onNameInput(){
+  userName = document.getElementById('userName').value.trim();
+  renderStreakBadge();
+}
+
+function logIsConfigured(){
+  return LOG_ENDPOINT && LOG_ENDPOINT.indexOf("PASTE_YOUR") === -1 && LOG_ENDPOINT.startsWith("http");
+}
+
+function setLogStatus(state, title){
+  const el = document.getElementById('logStatus');
+  el.className = 'log-status ' + state;
+  el.title = title || '';
+}
+
+function sendLog(payload){
+  if(!logIsConfigured()){ setLogStatus('off','Chưa cấu hình Apps Script logging'); return; }
+  fetch(LOG_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // tránh CORS preflight với Apps Script
+    body: JSON.stringify(payload)
+  }).then(res=>res.json()).then(data=>{
+    if(data && data.status==='ok') setLogStatus('ok','Đã lưu log vào Google Sheet');
+    else setLogStatus('err','Apps Script báo lỗi: '+(data && data.message || 'unknown'));
+  }).catch(()=>{
+    setLogStatus('err','Không gửi được log (kiểm tra URL Apps Script / mạng)');
+  });
+}
+
+/* ---------- tiến độ & streak (lưu trên máy, theo tên người học) ---------- */
+const PROGRESS_KEY = 'voicelab_progress_v1';
+
+function loadProgressStore(){
+  try{
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveProgressStore(store){
+  try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(store)); }catch(e){}
+}
+function todayStr(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function currentLearnerKey(){
+  if(verifiedId) return 'id:'+verifiedId;
+  return (userName && userName.trim()) ? userName.trim().toLowerCase() : '__guest__';
+}
+function getLearnerProgress(){
+  const store = loadProgressStore();
+  const key = currentLearnerKey();
+  if(!store[key]) store[key] = {streak:0, lastDate:null, sessions:[], displayName:userName||key};
+  store[key].displayName = userName || store[key].displayName || key;
+  return {store, key, entry: store[key]};
+}
+function renderStreakBadge(){
+  const {entry} = getLearnerProgress();
+  const badge = document.getElementById('streakBadge');
+  if(badge) badge.innerHTML = '🔥 ' + (entry.streak||0);
+}
+// Gọi mỗi khi hoàn tất một phiên luyện (bấm hết câu cuối / xem tổng kết)
+function recordSession(avgScore, count){
+  const {store, key, entry} = getLearnerProgress();
+  const today = todayStr();
+  if(entry.lastDate !== today){
+    const yest = todayStr(new Date(Date.now()-86400000));
+    entry.streak = (entry.lastDate === yest) ? (entry.streak||0)+1 : 1;
+    entry.lastDate = today;
+  }
+  entry.sessions.push({date:today, level:level, topic:selectedTopic, avg:avgScore, count:count});
+  if(entry.sessions.length>200) entry.sessions.shift(); // giới hạn dung lượng lưu trên máy
+  store[key] = entry;
+  saveProgressStore(store);
+  renderStreakBadge();
+}
+
+/* ---------- bảng điều khiển giảng viên ---------- */
+// Mã truy cập đơn giản phía client. Đây CHỈ là lớp chặn nhẹ để tránh SV bấm nhầm,
+// không phải bảo mật thật sự — dữ liệu thật được bảo vệ bằng "token" kiểm tra trong Code.gs (doGet).
+// Đổi mã này và mã TOKEN tương ứng trong Code.gs trước khi dùng thật.
+const GV_ACCESS_CODE = "bctech2026";
+let gvToken = "";
+let gvLastRows = [];
+
+function openDashboard(){
+  document.getElementById('gvModal').classList.add('show');
+}
+function closeDashboard(){
+  document.getElementById('gvModal').classList.remove('show');
+}
+function submitGvToken(){
+  const val = document.getElementById('gvTokenInput').value.trim();
+  const errEl = document.getElementById('gvError');
+  if(val !== GV_ACCESS_CODE){
+    errEl.textContent = 'Mã truy cập không đúng.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+  gvToken = val;
+  document.getElementById('gvLoginView').style.display='none';
+  document.getElementById('gvDataView').style.display='block';
+  refreshGvData();
+}
+
+function refreshGvData(){
+  const errEl = document.getElementById('gvError');
+  if(logIsConfigured()){
+    fetch(LOG_ENDPOINT + '?action=summary&token=' + encodeURIComponent(gvToken))
+      .then(res=>res.json())
+      .then(data=>{
+        if(data && data.status==='ok'){
+          gvLastRows = data.rows || [];
+          renderGvData(gvLastRows, false);
+        } else {
+          renderGvLocalFallback('Apps Script báo lỗi: ' + ((data && data.message) || 'không rõ') + '. Hiển thị dữ liệu cục bộ trên máy thay thế.');
+        }
+      })
+      .catch(()=>{
+        renderGvLocalFallback('Không kết nối được Apps Script (kiểm tra mạng / URL). Hiển thị dữ liệu cục bộ trên máy thay thế.');
+      });
+  } else {
+    renderGvLocalFallback('Chưa cấu hình Apps Script (LOG_ENDPOINT). Đang hiển thị dữ liệu lưu cục bộ trên thiết bị này.');
+  }
+}
+
+function renderGvLocalFallback(noteText){
+  const store = loadProgressStore();
+  const rows = Object.keys(store).filter(k=>k!=='__guest__').map(k=>{
+    const e = store[k];
+    const sessions = e.sessions || [];
+    const avg = sessions.length ? Math.round(sessions.reduce((a,s)=>a+s.avg,0)/sessions.length) : 0;
+    return {user:(e.displayName||k), sessions:sessions.length, avgScore:avg, lastActive:e.lastDate||'—'};
+  });
+  gvLastRows = rows;
+  renderGvData(rows, true, noteText);
+}
+
+function renderGvData(rows, isLocal, noteText){
+  const totalSessions = rows.reduce((a,r)=>a+(r.sessions||0),0);
+  const avgAll = rows.length ? Math.round(rows.reduce((a,r)=>a+(r.avgScore||0),0)/rows.length) : 0;
+  document.getElementById('gvStatCount').textContent = rows.length;
+  document.getElementById('gvStatAvg').textContent = avgAll+'%';
+  document.getElementById('gvStatSessions').textContent = totalSessions;
+
+  const list = document.getElementById('gvList');
+  if(rows.length===0){
+    list.innerHTML = '<div class="gv-empty">Chưa có dữ liệu luyện tập nào.</div>';
+  } else {
+    list.innerHTML = rows
+      .sort((a,b)=>(b.avgScore||0)-(a.avgScore||0))
+      .map(r=>{
+        const idPart = r.studentId ? (r.studentId + ' · ') : '';
+        const clsPart = r.className ? (' · Lớp ' + r.className) : '';
+        return `<div class="gv-summary-row"><span class="n">${idPart}${(r.user||'ẩn danh')}${clsPart}</span><span class="s">${r.sessions||0} lượt · TB ${r.avgScore||0}% · gần nhất ${r.lastActive||'—'}</span></div>`;
+      })
+      .join('');
+  }
+  if(isLocal && noteText){
+    list.innerHTML = `<div class="gv-empty">${noteText}</div>` + list.innerHTML;
+  }
+}
+
+function exportGvCsv(){
+  if(!gvLastRows.length){ alert('Chưa có dữ liệu để xuất.'); return; }
+  const header = 'Ho ten,MSSV/Ma GV,Lop,So luot luyen,Diem trung binh,Hoat dong gan nhat\n';
+  const body = gvLastRows.map(r=>`"${(r.user||'').replace(/"/g,'')}","${(r.studentId||'').replace(/"/g,'')}","${(r.className||'').replace(/"/g,'')}",${r.sessions||0},${r.avgScore||0},"${r.lastActive||''}"`).join('\n');
+  const blob = new Blob([header+body], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'voicelab-bao-cao-'+todayStr()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- content ---------- */
+const SETS = {
+  A1: [
+    {cat:"Giới thiệu bản thân", en:"Hello. My name is Nam.", vi:"Xin chào. Tên tôi là Nam."},
+    {cat:"Giới thiệu bản thân", en:"I am a student.", vi:"Tôi là sinh viên."},
+    {cat:"Giới thiệu bản thân", en:"I am twenty years old.", vi:"Tôi hai mươi tuổi."},
+    {cat:"Giới thiệu bản thân", en:"I live in Vung Tau.", vi:"Tôi sống ở Vũng Tàu."},
+    {cat:"Giới thiệu bản thân", en:"Nice to meet you.", vi:"Rất vui được gặp bạn."},
+    {cat:"Giới thiệu bản thân", en:"This is my friend.", vi:"Đây là bạn của tôi."},
+    {cat:"Công việc", en:"I study at BCTECH.", vi:"Tôi học tại BCTECH."},
+    {cat:"Công việc", en:"My class starts at seven.", vi:"Lớp tôi bắt đầu lúc bảy giờ."},
+    {cat:"Công việc", en:"I have four classes today.", vi:"Hôm nay tôi có bốn tiết học."},
+    {cat:"Công việc", en:"My teacher is very kind.", vi:"Giáo viên của tôi rất tốt bụng."},
+    {cat:"Công việc", en:"I like my school.", vi:"Tôi thích trường của mình."},
+    {cat:"Công việc", en:"I do my homework at night.", vi:"Tôi làm bài tập vào buổi tối."},
+    {cat:"Sinh hoạt hàng ngày", en:"I wake up at six.", vi:"Tôi thức dậy lúc sáu giờ."},
+    {cat:"Sinh hoạt hàng ngày", en:"I eat breakfast at home.", vi:"Tôi ăn sáng ở nhà."},
+    {cat:"Sinh hoạt hàng ngày", en:"I go to school by bus.", vi:"Tôi đến trường bằng xe buýt."},
+    {cat:"Sinh hoạt hàng ngày", en:"I have lunch at noon.", vi:"Tôi ăn trưa lúc mười hai giờ."},
+    {cat:"Sinh hoạt hàng ngày", en:"I watch TV in the evening.", vi:"Tôi xem tivi vào buổi tối."},
+    {cat:"Sinh hoạt hàng ngày", en:"I go to bed at ten.", vi:"Tôi đi ngủ lúc mười giờ."},
+    {cat:"Mua sắm", en:"How much is this?", vi:"Cái này giá bao nhiêu?"},
+    {cat:"Mua sắm", en:"I want to buy a shirt.", vi:"Tôi muốn mua một cái áo."},
+    {cat:"Mua sắm", en:"This is too expensive.", vi:"Cái này quá đắt."},
+    {cat:"Mua sắm", en:"Do you have a smaller size?", vi:"Bạn có cỡ nhỏ hơn không?"},
+    {cat:"Mua sắm", en:"I will take this one.", vi:"Tôi sẽ lấy cái này."},
+    {cat:"Mua sắm", en:"Can I pay by card?", vi:"Tôi có thể trả bằng thẻ không?"},
+    {cat:"Sức khỏe", en:"I feel sick today.", vi:"Hôm nay tôi cảm thấy không khỏe."},
+    {cat:"Sức khỏe", en:"I have a headache.", vi:"Tôi bị đau đầu."},
+    {cat:"Sức khỏe", en:"I need to see a doctor.", vi:"Tôi cần đi khám bác sĩ."},
+    {cat:"Sức khỏe", en:"Drink more water every day.", vi:"Hãy uống nhiều nước hơn mỗi ngày."},
+    {cat:"Sức khỏe", en:"I sleep eight hours a day.", vi:"Tôi ngủ tám tiếng mỗi ngày."},
+    {cat:"Sức khỏe", en:"I feel better now.", vi:"Bây giờ tôi cảm thấy khỏe hơn rồi."},
+    {cat:"Thời tiết", en:"It is sunny today.", vi:"Hôm nay trời nắng."},
+    {cat:"Thời tiết", en:"It is raining outside.", vi:"Trời đang mưa bên ngoài."},
+    {cat:"Thời tiết", en:"It is very hot today.", vi:"Hôm nay trời rất nóng."},
+    {cat:"Thời tiết", en:"I like cool weather.", vi:"Tôi thích thời tiết mát mẻ."},
+    {cat:"Thời tiết", en:"Take an umbrella with you.", vi:"Hãy mang theo ô nhé."},
+    {cat:"Thời tiết", en:"The wind is strong today.", vi:"Hôm nay gió rất mạnh."},
+    {cat:"Giao tiếp lịch sự", en:"Excuse me, can you help me?", vi:"Xin lỗi, bạn có thể giúp tôi không?"},
+    {cat:"Giao tiếp lịch sự", en:"Thank you very much.", vi:"Cảm ơn bạn rất nhiều."},
+    {cat:"Giao tiếp lịch sự", en:"I am sorry, I am late.", vi:"Xin lỗi, tôi đến muộn."},
+    {cat:"Giao tiếp lịch sự", en:"You are welcome.", vi:"Không có gì."},
+    {cat:"Giao tiếp lịch sự", en:"Could you speak slowly, please?", vi:"Bạn có thể nói chậm hơn được không?"},
+    {cat:"Giao tiếp lịch sự", en:"See you tomorrow.", vi:"Hẹn gặp lại bạn vào ngày mai."},
+    {cat:"Du lịch", en:"I want to go to the beach.", vi:"Tôi muốn đi biển."},
+    {cat:"Du lịch", en:"Where is the bus station?", vi:"Bến xe buýt ở đâu?"},
+    {cat:"Du lịch", en:"I need a hotel room.", vi:"Tôi cần một phòng khách sạn."},
+    {cat:"Du lịch", en:"How far is it from here?", vi:"Từ đây đến đó xa không?"},
+    {cat:"Du lịch", en:"I am on a trip with my family.", vi:"Tôi đang đi du lịch cùng gia đình."},
+    {cat:"Du lịch", en:"Vung Tau has beautiful beaches.", vi:"Vũng Tàu có những bãi biển đẹp."}
+  ],
+  A2: [
+    {cat:"Giới thiệu bản thân", en:"Hello, I'm Tuan. I live in Hanoi.", vi:"Xin chào, tôi là Tuấn. Tôi sống ở Hà Nội."},
+    {cat:"Giới thiệu bản thân", en:"Nice to meet you!", vi:"Rất vui được gặp bạn!"},
+    {cat:"Giới thiệu bản thân", en:"My name is Lan and I am a teacher.", vi:"Tên tôi là Lan và tôi là giáo viên."},
+    {cat:"Công việc", en:"I work at BCTech. I start work at eight.", vi:"Tôi làm việc tại BCTech. Tôi bắt đầu làm lúc tám giờ."},
+    {cat:"Công việc", en:"I will send you the report tomorrow.", vi:"Tôi sẽ gửi báo cáo cho bạn vào ngày mai."},
+    {cat:"Công việc", en:"My office is on the third floor.", vi:"Văn phòng của tôi ở tầng ba."},
+    {cat:"Sinh hoạt hàng ngày", en:"I usually have coffee and check emails.", vi:"Tôi thường uống cà phê và kiểm tra email."},
+    {cat:"Sinh hoạt hàng ngày", en:"I go to bed around ten thirty.", vi:"Tôi đi ngủ khoảng mười giờ rưỡi."},
+    {cat:"Sinh hoạt hàng ngày", en:"I have lunch at twelve every day.", vi:"Tôi ăn trưa lúc mười hai giờ mỗi ngày."},
+    {cat:"Giao tiếp lịch sự", en:"Could you speak more slowly, please?", vi:"Bạn có thể nói chậm hơn được không?"},
+    {cat:"Giao tiếp lịch sự", en:"Thank you very much for your help.", vi:"Cảm ơn bạn rất nhiều vì đã giúp đỡ."},
+    {cat:"Giao tiếp lịch sự", en:"Excuse me, where is the restroom?", vi:"Xin lỗi, nhà vệ sinh ở đâu ạ?"},
+    {cat:"Mua sắm", en:"How much does this cost?", vi:"Cái này giá bao nhiêu vậy?"},
+    {cat:"Mua sắm", en:"Can I pay by card?", vi:"Tôi có thể thanh toán bằng thẻ không?"},
+    {cat:"Mua sắm", en:"I would like to buy a new notebook.", vi:"Tôi muốn mua một quyển sổ mới."},
+    {cat:"Thời tiết", en:"It's very hot today.", vi:"Hôm nay trời rất nóng."},
+    {cat:"Thời tiết", en:"I think it will rain this afternoon.", vi:"Tôi nghĩ chiều nay trời sẽ mưa."},
+    {cat:"Thời tiết", en:"Don't forget to bring an umbrella.", vi:"Đừng quên mang theo ô nhé."},
+    {cat:"Sức khỏe", en:"I have a small headache today.", vi:"Hôm nay tôi hơi đau đầu."},
+    {cat:"Sức khỏe", en:"I need to see a doctor.", vi:"Tôi cần đi khám bác sĩ."},
+    {cat:"Sức khỏe", en:"Drink more water and rest well.", vi:"Hãy uống nhiều nước và nghỉ ngơi thật tốt."},
+    {cat:"Du lịch", en:"I want to travel to Da Lat next month.", vi:"Tôi muốn đi du lịch Đà Lạt vào tháng sau."},
+    {cat:"Du lịch", en:"What time does the bus leave?", vi:"Xe buýt khởi hành lúc mấy giờ?"},
+    {cat:"Du lịch", en:"The hotel is near the beach.", vi:"Khách sạn ở gần bãi biển."},
+    {cat:"Giới thiệu bản thân", en:"I am twenty five years old.", vi:"Tôi hai mươi lăm tuổi."},
+    {cat:"Giới thiệu bản thân", en:"I come from Vietnam.", vi:"Tôi đến từ Việt Nam."},
+    {cat:"Giới thiệu bản thân", en:"I have one brother and one sister.", vi:"Tôi có một anh trai và một chị gái."},
+    {cat:"Giới thiệu bản thân", en:"My hobby is reading books.", vi:"Sở thích của tôi là đọc sách."},
+    {cat:"Giới thiệu bản thân", en:"I like listening to music.", vi:"Tôi thích nghe nhạc."},
+    {cat:"Giới thiệu bản thân", en:"I am a student at BCTech.", vi:"Tôi là sinh viên tại BCTech."},
+    {cat:"Giới thiệu bản thân", en:"This is my friend, Minh.", vi:"Đây là bạn tôi, Minh."},
+    {cat:"Giới thiệu bản thân", en:"I live with my family.", vi:"Tôi sống cùng gia đình."},
+    {cat:"Giới thiệu bản thân", en:"My favorite color is blue.", vi:"Màu yêu thích của tôi là màu xanh dương."},
+    {cat:"Giới thiệu bản thân", en:"I can speak a little English.", vi:"Tôi có thể nói một chút tiếng Anh."},
+    {cat:"Công việc", en:"I work from Monday to Friday.", vi:"Tôi làm việc từ thứ Hai đến thứ Sáu."},
+    {cat:"Công việc", en:"My boss is very kind.", vi:"Sếp của tôi rất tốt bụng."},
+    {cat:"Công việc", en:"I have a meeting at nine o'clock.", vi:"Tôi có một cuộc họp lúc chín giờ."},
+    {cat:"Công việc", en:"I usually eat lunch with my colleagues.", vi:"Tôi thường ăn trưa cùng đồng nghiệp."},
+    {cat:"Công việc", en:"I need a new computer for my work.", vi:"Tôi cần một chiếc máy tính mới cho công việc."},
+    {cat:"Công việc", en:"My job is interesting.", vi:"Công việc của tôi rất thú vị."},
+    {cat:"Công việc", en:"I take the bus to work every day.", vi:"Tôi đi xe buýt đến chỗ làm mỗi ngày."},
+    {cat:"Công việc", en:"I finish work at five in the afternoon.", vi:"Tôi tan làm lúc năm giờ chiều."},
+    {cat:"Công việc", en:"We have a small team of ten people.", vi:"Chúng tôi có một nhóm nhỏ gồm mười người."},
+    {cat:"Công việc", en:"I like my job very much.", vi:"Tôi rất thích công việc của mình."},
+    {cat:"Sinh hoạt hàng ngày", en:"I wake up at six every morning.", vi:"Tôi thức dậy lúc sáu giờ mỗi sáng."},
+    {cat:"Sinh hoạt hàng ngày", en:"I brush my teeth after breakfast.", vi:"Tôi đánh răng sau khi ăn sáng."},
+    {cat:"Sinh hoạt hàng ngày", en:"I ride my motorbike to school.", vi:"Tôi đi xe máy đến trường."},
+    {cat:"Sinh hoạt hàng ngày", en:"I clean my room on Sundays.", vi:"Tôi dọn phòng vào Chủ nhật."},
+    {cat:"Sinh hoạt hàng ngày", en:"I watch television in the evening.", vi:"Tôi xem tivi vào buổi tối."},
+    {cat:"Sinh hoạt hàng ngày", en:"I cook dinner with my mother.", vi:"Tôi nấu bữa tối cùng mẹ."},
+    {cat:"Sinh hoạt hàng ngày", en:"I take a shower before bed.", vi:"Tôi tắm trước khi đi ngủ."},
+    {cat:"Sinh hoạt hàng ngày", en:"I water the plants every morning.", vi:"Tôi tưới cây mỗi sáng."},
+    {cat:"Sinh hoạt hàng ngày", en:"I read the news on my phone.", vi:"Tôi đọc tin tức trên điện thoại."},
+    {cat:"Sinh hoạt hàng ngày", en:"I do exercise for thirty minutes a day.", vi:"Tôi tập thể dục ba mươi phút mỗi ngày."},
+    {cat:"Giao tiếp lịch sự", en:"Could you help me, please?", vi:"Bạn có thể giúp tôi được không?"},
+    {cat:"Giao tiếp lịch sự", en:"I'm sorry, I don't understand.", vi:"Xin lỗi, tôi không hiểu."},
+    {cat:"Giao tiếp lịch sự", en:"Can you repeat that, please?", vi:"Bạn có thể nhắc lại được không?"},
+    {cat:"Giao tiếp lịch sự", en:"Excuse me, may I ask a question?", vi:"Xin lỗi, tôi có thể hỏi một câu không?"},
+    {cat:"Giao tiếp lịch sự", en:"Thank you for your time.", vi:"Cảm ơn vì đã dành thời gian."},
+    {cat:"Giao tiếp lịch sự", en:"Sorry, I am late.", vi:"Xin lỗi, tôi đến trễ."},
+    {cat:"Giao tiếp lịch sự", en:"Nice to see you again.", vi:"Rất vui được gặp lại bạn."},
+    {cat:"Giao tiếp lịch sự", en:"Please have a seat.", vi:"Mời bạn ngồi."},
+    {cat:"Giao tiếp lịch sự", en:"Would you like some tea?", vi:"Bạn có muốn dùng trà không?"},
+    {cat:"Giao tiếp lịch sự", en:"It was nice talking to you.", vi:"Rất vui được trò chuyện với bạn."},
+    {cat:"Mua sắm", en:"Do you have this in a bigger size?", vi:"Bạn có size lớn hơn không?"},
+    {cat:"Mua sắm", en:"Where can I find the fitting room?", vi:"Phòng thử đồ ở đâu vậy?"},
+    {cat:"Mua sắm", en:"I need a receipt, please.", vi:"Cho tôi xin hóa đơn."},
+    {cat:"Mua sắm", en:"This shirt is too expensive.", vi:"Chiếc áo này quá đắt."},
+    {cat:"Mua sắm", en:"Do you have any discounts today?", vi:"Hôm nay có giảm giá không?"},
+    {cat:"Mua sắm", en:"I want to return this item.", vi:"Tôi muốn trả lại món này."},
+    {cat:"Mua sắm", en:"Can you show me another color?", vi:"Bạn có thể cho tôi xem màu khác không?"},
+    {cat:"Mua sắm", en:"I'm just looking, thank you.", vi:"Tôi chỉ xem thôi, cảm ơn."},
+    {cat:"Mua sắm", en:"This bag is very nice.", vi:"Chiếc túi này rất đẹp."},
+    {cat:"Mua sắm", en:"Where is the nearest supermarket?", vi:"Siêu thị gần nhất ở đâu?"},
+    {cat:"Thời tiết", en:"It is windy today.", vi:"Hôm nay trời có gió."},
+    {cat:"Thời tiết", en:"The sky is very blue.", vi:"Bầu trời rất xanh."},
+    {cat:"Thời tiết", en:"It's cold in the morning.", vi:"Buổi sáng trời lạnh."},
+    {cat:"Thời tiết", en:"I like sunny days.", vi:"Tôi thích những ngày nắng."},
+    {cat:"Thời tiết", en:"It rained a lot last night.", vi:"Tối qua trời mưa rất nhiều."},
+    {cat:"Thời tiết", en:"The weather is nice this week.", vi:"Thời tiết tuần này đẹp."},
+    {cat:"Thời tiết", en:"It's foggy outside.", vi:"Bên ngoài trời có sương mù."},
+    {cat:"Thời tiết", en:"Winter in Da Lat is cool.", vi:"Mùa đông ở Đà Lạt mát mẻ."},
+    {cat:"Thời tiết", en:"Summer here is very hot.", vi:"Mùa hè ở đây rất nóng."},
+    {cat:"Thời tiết", en:"Please check the weather forecast.", vi:"Hãy kiểm tra dự báo thời tiết."},
+    {cat:"Sức khỏe", en:"I have a sore throat.", vi:"Tôi bị đau họng."},
+    {cat:"Sức khỏe", en:"Please take this medicine after meals.", vi:"Hãy uống thuốc này sau bữa ăn."},
+    {cat:"Sức khỏe", en:"I feel better today.", vi:"Hôm nay tôi cảm thấy khỏe hơn."},
+    {cat:"Sức khỏe", en:"She has a fever.", vi:"Cô ấy bị sốt."},
+    {cat:"Sức khỏe", en:"I go to the gym twice a week.", vi:"Tôi đến phòng gym hai lần một tuần."},
+    {cat:"Sức khỏe", en:"Wash your hands before eating.", vi:"Hãy rửa tay trước khi ăn."},
+    {cat:"Sức khỏe", en:"I need to buy some vitamins.", vi:"Tôi cần mua một ít vitamin."},
+    {cat:"Sức khỏe", en:"He broke his arm last week.", vi:"Anh ấy bị gãy tay tuần trước."},
+    {cat:"Sức khỏe", en:"Get well soon.", vi:"Chúc mau khỏe nhé."},
+    {cat:"Sức khỏe", en:"I sleep eight hours every night.", vi:"Tôi ngủ tám tiếng mỗi đêm."},
+    {cat:"Du lịch", en:"I need to book a hotel room.", vi:"Tôi cần đặt một phòng khách sạn."},
+    {cat:"Du lịch", en:"Where is the train station?", vi:"Ga tàu ở đâu vậy?"},
+    {cat:"Du lịch", en:"Can I have a map of the city?", vi:"Cho tôi xin bản đồ thành phố được không?"},
+    {cat:"Du lịch", en:"This place is very beautiful.", vi:"Nơi này rất đẹp."},
+    {cat:"Du lịch", en:"We took a lot of photos.", vi:"Chúng tôi đã chụp rất nhiều ảnh."},
+    {cat:"Du lịch", en:"The flight was two hours long.", vi:"Chuyến bay kéo dài hai tiếng."},
+    {cat:"Du lịch", en:"I lost my passport.", vi:"Tôi bị mất hộ chiếu."},
+    {cat:"Du lịch", en:"Is breakfast included in the room?", vi:"Bữa sáng có bao gồm trong phòng không?"},
+    {cat:"Du lịch", en:"I want to visit the museum tomorrow.", vi:"Tôi muốn tham quan bảo tàng vào ngày mai."},
+    {cat:"Du lịch", en:"The weather here is perfect for travel.", vi:"Thời tiết ở đây rất lý tưởng để đi du lịch."}
+  ],
+  B1: [
+    {cat:"Công việc", en:"I have been working on this project for two months.", vi:"Tôi đã làm dự án này được hai tháng."},
+    {cat:"Công việc", en:"Could we reschedule the meeting to next Monday?", vi:"Chúng ta có thể dời cuộc họp sang thứ Hai tuần sau không?"},
+    {cat:"Công việc", en:"I need to finish this report before Friday.", vi:"Tôi cần hoàn thành báo cáo này trước thứ Sáu."},
+    {cat:"Ý kiến", en:"In my opinion, this plan needs more preparation.", vi:"Theo tôi, kế hoạch này cần chuẩn bị kỹ hơn."},
+    {cat:"Ý kiến", en:"I think online learning is more flexible than traditional classes.", vi:"Tôi nghĩ học trực tuyến linh hoạt hơn học truyền thống."},
+    {cat:"Ý kiến", en:"Some people believe that working from home increases productivity.", vi:"Một số người tin rằng làm việc tại nhà giúp tăng năng suất."},
+    {cat:"Kể chuyện", en:"Last weekend, I visited my hometown and met old friends.", vi:"Cuối tuần trước, tôi về quê và gặp lại bạn cũ."},
+    {cat:"Kể chuyện", en:"If I have free time, I usually read books or exercise.", vi:"Nếu có thời gian rảnh, tôi thường đọc sách hoặc tập thể dục."},
+    {cat:"Kể chuyện", en:"When I was a student, I used to walk to school every day.", vi:"Khi còn là học sinh, tôi thường đi bộ đến trường mỗi ngày."},
+    {cat:"Giao tiếp lịch sự", en:"I'm sorry for the delay, it won't happen again.", vi:"Xin lỗi vì sự chậm trễ, việc này sẽ không lặp lại."},
+    {cat:"Giao tiếp lịch sự", en:"Would you mind repeating that last part?", vi:"Bạn có thể nhắc lại phần cuối được không?"},
+    {cat:"Giao tiếp lịch sự", en:"I really appreciate your patience with this issue.", vi:"Tôi thực sự cảm kích vì sự kiên nhẫn của bạn với vấn đề này."},
+    {cat:"Du lịch", en:"I have never been to Japan, but I would love to go someday.", vi:"Tôi chưa từng đến Nhật Bản, nhưng tôi rất muốn đi vào một ngày nào đó."},
+    {cat:"Du lịch", en:"Could you recommend a good place to visit nearby?", vi:"Bạn có thể gợi ý một chỗ hay để tham quan gần đây không?"},
+    {cat:"Du lịch", en:"We spent three days exploring the old town.", vi:"Chúng tôi đã dành ba ngày khám phá phố cổ."},
+    {cat:"Sức khỏe", en:"I have been feeling tired lately, so I decided to exercise more.", vi:"Gần đây tôi cảm thấy mệt mỏi, nên tôi quyết định tập thể dục nhiều hơn."},
+    {cat:"Sức khỏe", en:"You should see a doctor if the pain continues.", vi:"Bạn nên đi khám bác sĩ nếu cơn đau vẫn tiếp diễn."},
+    {cat:"Sức khỏe", en:"Eating healthy food helps you concentrate better at work.", vi:"Ăn uống lành mạnh giúp bạn tập trung tốt hơn trong công việc."},
+    {cat:"Kế hoạch tương lai", en:"I'm planning to study abroad next year.", vi:"Tôi đang có kế hoạch đi du học vào năm sau."},
+    {cat:"Kế hoạch tương lai", en:"By this time next year, I will have finished my degree.", vi:"Đến thời điểm này năm sau, tôi sẽ hoàn thành xong bằng cấp của mình."},
+    {cat:"Kế hoạch tương lai", en:"We are going to launch the new project in September.", vi:"Chúng tôi sẽ triển khai dự án mới vào tháng Chín."},
+    {cat:"Giả định", en:"If I had more time, I would learn another language.", vi:"Nếu có nhiều thời gian hơn, tôi sẽ học thêm một ngôn ngữ khác."},
+    {cat:"Giả định", en:"If it rains tomorrow, we will cancel the outdoor event.", vi:"Nếu ngày mai trời mưa, chúng tôi sẽ hủy sự kiện ngoài trời."},
+    {cat:"Giả định", en:"I wish I had studied English harder when I was young.", vi:"Tôi ước gì mình đã học tiếng Anh chăm chỉ hơn khi còn trẻ."},
+    {cat:"Công việc", en:"I have just submitted the quarterly report to my manager.", vi:"Tôi vừa nộp báo cáo quý cho quản lý."},
+    {cat:"Công việc", en:"We should discuss this issue during the next meeting.", vi:"Chúng ta nên bàn về vấn đề này trong cuộc họp tới."},
+    {cat:"Công việc", en:"She has taken on more responsibilities since her promotion.", vi:"Cô ấy đã đảm nhận nhiều trách nhiệm hơn kể từ khi được thăng chức."},
+    {cat:"Công việc", en:"I'm used to working under tight deadlines now.", vi:"Giờ tôi đã quen với việc làm việc dưới áp lực thời hạn."},
+    {cat:"Công việc", en:"Our team is currently working on a new marketing plan.", vi:"Nhóm chúng tôi hiện đang thực hiện một kế hoạch marketing mới."},
+    {cat:"Công việc", en:"He suggested that we hire another staff member.", vi:"Anh ấy đề nghị chúng tôi tuyển thêm một nhân viên."},
+    {cat:"Công việc", en:"I have to attend a training session next Wednesday.", vi:"Tôi phải tham dự một buổi đào tạo vào thứ Tư tới."},
+    {cat:"Công việc", en:"The company is planning to open a new branch office.", vi:"Công ty đang có kế hoạch mở thêm một chi nhánh mới."},
+    {cat:"Công việc", en:"I've been trying to improve my presentation skills.", vi:"Tôi đã cố gắng cải thiện kỹ năng thuyết trình của mình."},
+    {cat:"Công việc", en:"We need to review the budget before making a decision.", vi:"Chúng ta cần xem lại ngân sách trước khi đưa ra quyết định."},
+    {cat:"Ý kiến", en:"Personally, I feel that public transport should be improved.", vi:"Cá nhân tôi cảm thấy giao thông công cộng nên được cải thiện."},
+    {cat:"Ý kiến", en:"It seems to me that this rule is unnecessary.", vi:"Tôi thấy quy định này có vẻ không cần thiết."},
+    {cat:"Ý kiến", en:"From my point of view, education is the key to success.", vi:"Theo quan điểm của tôi, giáo dục là chìa khóa của thành công."},
+    {cat:"Ý kiến", en:"I disagree with the idea of working overtime every week.", vi:"Tôi không đồng ý với việc làm thêm giờ mỗi tuần."},
+    {cat:"Ý kiến", en:"Some people argue that social media has more benefits than drawbacks.", vi:"Một số người cho rằng mạng xã hội có nhiều lợi ích hơn tác hại."},
+    {cat:"Ý kiến", en:"I'm not entirely convinced that this method works well.", vi:"Tôi không hoàn toàn tin rằng phương pháp này hiệu quả."},
+    {cat:"Ý kiến", en:"As far as I know, the policy will change next year.", vi:"Theo tôi được biết, chính sách sẽ thay đổi vào năm sau."},
+    {cat:"Ý kiến", en:"I would say that honesty is the most important value.", vi:"Tôi cho rằng sự trung thực là giá trị quan trọng nhất."},
+    {cat:"Ý kiến", en:"In general, I support the new regulations.", vi:"Nhìn chung, tôi ủng hộ các quy định mới."},
+    {cat:"Ý kiến", en:"To be honest, I have mixed feelings about this plan.", vi:"Thành thật mà nói, tôi có cảm xúc lẫn lộn về kế hoạch này."},
+    {cat:"Kể chuyện", en:"I remember the first time I rode a bicycle.", vi:"Tôi nhớ lần đầu tiên tôi đi xe đạp."},
+    {cat:"Kể chuyện", en:"While I was walking home, it suddenly started to rain.", vi:"Trong lúc tôi đang đi bộ về nhà, trời bỗng đổ mưa."},
+    {cat:"Kể chuyện", en:"We had already eaten dinner when they arrived.", vi:"Chúng tôi đã ăn tối xong khi họ đến."},
+    {cat:"Kể chuyện", en:"I used to be afraid of speaking in public.", vi:"Trước đây tôi từng sợ nói trước đám đông."},
+    {cat:"Kể chuyện", en:"After graduating, I moved to the city to find a job.", vi:"Sau khi tốt nghiệp, tôi chuyển đến thành phố để tìm việc."},
+    {cat:"Kể chuyện", en:"She told me about the trip she took last summer.", vi:"Cô ấy kể cho tôi nghe về chuyến đi mùa hè năm ngoái."},
+    {cat:"Kể chuyện", en:"I was studying when the power went out.", vi:"Tôi đang học bài thì mất điện."},
+    {cat:"Kể chuyện", en:"It was the best holiday I have ever had.", vi:"Đó là kỳ nghỉ tuyệt vời nhất mà tôi từng có."},
+    {cat:"Kể chuyện", en:"By the time I finished, everyone had gone home.", vi:"Đến lúc tôi làm xong thì mọi người đã về hết."},
+    {cat:"Kể chuyện", en:"I still remember how nervous I was on my first day.", vi:"Tôi vẫn còn nhớ mình đã hồi hộp thế nào vào ngày đầu tiên."},
+    {cat:"Giao tiếp lịch sự", en:"Would it be alright if I left a bit early today?", vi:"Liệu có ổn không nếu hôm nay tôi về sớm một chút?"},
+    {cat:"Giao tiếp lịch sự", en:"I hope this doesn't cause you any trouble.", vi:"Tôi hy vọng điều này không gây phiền cho bạn."},
+    {cat:"Giao tiếp lịch sự", en:"Thank you for taking the time to explain this to me.", vi:"Cảm ơn bạn đã dành thời gian giải thích điều này cho tôi."},
+    {cat:"Giao tiếp lịch sự", en:"I was wondering if you could give me some advice.", vi:"Tôi tự hỏi liệu bạn có thể cho tôi vài lời khuyên không."},
+    {cat:"Giao tiếp lịch sự", en:"Sorry to bother you, but could I ask a favor?", vi:"Xin lỗi làm phiền, nhưng tôi có thể nhờ một việc không?"},
+    {cat:"Giao tiếp lịch sự", en:"I appreciate your understanding regarding the delay.", vi:"Tôi rất cảm kích sự thông cảm của bạn về sự chậm trễ này."},
+    {cat:"Giao tiếp lịch sự", en:"Please let me know if there's anything I can do.", vi:"Hãy cho tôi biết nếu có điều gì tôi có thể giúp."},
+    {cat:"Giao tiếp lịch sự", en:"Would you mind if I opened the window?", vi:"Bạn có phiền không nếu tôi mở cửa sổ?"},
+    {cat:"Giao tiếp lịch sự", en:"I hope everything works out well for you.", vi:"Tôi hy vọng mọi việc sẽ suôn sẻ với bạn."},
+    {cat:"Giao tiếp lịch sự", en:"Feel free to contact me if you have any questions.", vi:"Đừng ngại liên hệ với tôi nếu bạn có câu hỏi."},
+    {cat:"Du lịch", en:"We're thinking about backpacking through Southeast Asia next year.", vi:"Chúng tôi đang nghĩ đến việc phượt xuyên Đông Nam Á vào năm sau."},
+    {cat:"Du lịch", en:"Have you ever tried local street food while traveling?", vi:"Bạn đã bao giờ thử đồ ăn đường phố khi đi du lịch chưa?"},
+    {cat:"Du lịch", en:"It took us almost a whole day to get to the island.", vi:"Chúng tôi mất gần cả ngày để đến được hòn đảo."},
+    {cat:"Du lịch", en:"I'd love to visit somewhere I've never been before.", vi:"Tôi rất muốn ghé thăm một nơi mà mình chưa từng đến."},
+    {cat:"Du lịch", en:"Make sure to book your tickets in advance during holidays.", vi:"Hãy chắc chắn đặt vé trước vào dịp lễ."},
+    {cat:"Du lịch", en:"The tour guide showed us around the ancient temple.", vi:"Hướng dẫn viên đã đưa chúng tôi đi tham quan ngôi đền cổ."},
+    {cat:"Du lịch", en:"We got lost trying to find our hotel at night.", vi:"Chúng tôi bị lạc đường khi tìm khách sạn vào ban đêm."},
+    {cat:"Du lịch", en:"Traveling alone taught me to be more independent.", vi:"Đi du lịch một mình đã dạy tôi cách tự lập hơn."},
+    {cat:"Du lịch", en:"I always try to learn a few local phrases before I travel.", vi:"Tôi luôn cố học vài câu tiếng địa phương trước khi đi."},
+    {cat:"Du lịch", en:"The view from the mountain top was absolutely breathtaking.", vi:"Khung cảnh từ đỉnh núi thật sự ngoạn mục."},
+    {cat:"Sức khỏe", en:"I've cut down on junk food to stay healthier.", vi:"Tôi đã giảm ăn đồ ăn vặt để khỏe hơn."},
+    {cat:"Sức khỏe", en:"It's important to get enough sleep every night.", vi:"Việc ngủ đủ giấc mỗi đêm rất quan trọng."},
+    {cat:"Sức khỏe", en:"He has been recovering well since the surgery.", vi:"Anh ấy đã hồi phục tốt kể từ sau ca phẫu thuật."},
+    {cat:"Sức khỏe", en:"Stress can affect both your body and your mind.", vi:"Căng thẳng có thể ảnh hưởng đến cả cơ thể lẫn tinh thần."},
+    {cat:"Sức khỏe", en:"I try to walk at least ten thousand steps a day.", vi:"Tôi cố gắng đi bộ ít nhất mười nghìn bước mỗi ngày."},
+    {cat:"Sức khỏe", en:"She has an appointment with the dentist tomorrow.", vi:"Cô ấy có hẹn với nha sĩ vào ngày mai."},
+    {cat:"Sức khỏe", en:"Skipping breakfast isn't a good habit.", vi:"Bỏ bữa sáng không phải là thói quen tốt."},
+    {cat:"Sức khỏe", en:"I've started doing yoga to relax after work.", vi:"Tôi đã bắt đầu tập yoga để thư giãn sau giờ làm."},
+    {cat:"Sức khỏe", en:"Make sure you take your medicine on time.", vi:"Hãy chắc chắn uống thuốc đúng giờ."},
+    {cat:"Sức khỏe", en:"A balanced diet helps you stay energetic all day.", vi:"Chế độ ăn cân bằng giúp bạn tràn đầy năng lượng cả ngày."},
+    {cat:"Kế hoạch tương lai", en:"I'm hoping to get a promotion within the next two years.", vi:"Tôi hy vọng sẽ được thăng chức trong hai năm tới."},
+    {cat:"Kế hoạch tương lai", en:"We are considering moving to a bigger apartment soon.", vi:"Chúng tôi đang cân nhắc chuyển đến một căn hộ lớn hơn sớm thôi."},
+    {cat:"Kế hoạch tương lai", en:"Once I save enough money, I will buy a car.", vi:"Khi nào tiết kiệm đủ tiền, tôi sẽ mua một chiếc xe hơi."},
+    {cat:"Kế hoạch tương lai", en:"I intend to start my own business someday.", vi:"Tôi dự định sẽ tự khởi nghiệp vào một ngày nào đó."},
+    {cat:"Kế hoạch tương lai", en:"Next month, we're going to redecorate our office.", vi:"Tháng sau, chúng tôi sẽ trang trí lại văn phòng."},
+    {cat:"Kế hoạch tương lai", en:"I plan to take an English exam by the end of this year.", vi:"Tôi dự định thi tiếng Anh vào cuối năm nay."},
+    {cat:"Kế hoạch tương lai", en:"They are about to sign the contract next week.", vi:"Họ sắp ký hợp đồng vào tuần tới."},
+    {cat:"Kế hoạch tương lai", en:"I hope to travel to more countries in the future.", vi:"Tôi hy vọng sẽ được đi du lịch nhiều nước hơn trong tương lai."},
+    {cat:"Kế hoạch tương lai", en:"By next year, I will have completed this certificate.", vi:"Đến năm sau, tôi sẽ hoàn thành xong chứng chỉ này."},
+    {cat:"Kế hoạch tương lai", en:"We're aiming to finish the project ahead of schedule.", vi:"Chúng tôi đang cố gắng hoàn thành dự án trước thời hạn."},
+    {cat:"Giả định", en:"If I were you, I would ask for more time.", vi:"Nếu tôi là bạn, tôi sẽ xin thêm thời gian."},
+    {cat:"Giả định", en:"If she studies hard, she will pass the exam.", vi:"Nếu cô ấy học chăm chỉ, cô ấy sẽ vượt qua kỳ thi."},
+    {cat:"Giả định", en:"I would travel more if I had more money.", vi:"Tôi sẽ đi du lịch nhiều hơn nếu có nhiều tiền hơn."},
+    {cat:"Giả định", en:"If it hadn't rained, we would have gone hiking.", vi:"Nếu trời không mưa, chúng tôi đã đi leo núi rồi."},
+    {cat:"Giả định", en:"Suppose you won the lottery, what would you do?", vi:"Giả sử bạn trúng số, bạn sẽ làm gì?"},
+    {cat:"Giả định", en:"If I were in charge, I would change this policy.", vi:"Nếu tôi là người phụ trách, tôi sẽ thay đổi chính sách này."},
+    {cat:"Giả định", en:"Unless we hurry, we will miss the train.", vi:"Trừ khi chúng ta nhanh lên, chúng ta sẽ lỡ chuyến tàu."},
+    {cat:"Giả định", en:"I wish I could speak French fluently.", vi:"Tôi ước gì mình có thể nói tiếng Pháp trôi chảy."},
+    {cat:"Giả định", en:"If he had asked me, I would have helped him.", vi:"Nếu anh ấy đã hỏi tôi, tôi đã giúp anh ấy rồi."},
+    {cat:"Giả định", en:"What would you do if you lost your job?", vi:"Bạn sẽ làm gì nếu mất việc?"}
+  ],
+  B2: [
+    {cat:"Công việc", en:"The proposal was rejected because it lacked sufficient financial backing.", vi:"Đề xuất đã bị từ chối vì thiếu sự hỗ trợ tài chính đầy đủ."},
+    {cat:"Công việc", en:"I'd rather deal with this issue before it escalates any further.", vi:"Tôi thà giải quyết vấn đề này trước khi nó leo thang thêm nữa."},
+    {cat:"Công việc", en:"She's been putting off the deadline for weeks now.", vi:"Cô ấy đã trì hoãn thời hạn này nhiều tuần rồi."},
+    {cat:"Ý kiến & Tranh luận", en:"Although the plan sounds appealing, it overlooks several practical obstacles.", vi:"Mặc dù kế hoạch nghe có vẻ hấp dẫn, nó bỏ qua một số trở ngại thực tế."},
+    {cat:"Ý kiến & Tranh luận", en:"On balance, I'd say the benefits outweigh the drawbacks.", vi:"Nhìn chung, tôi cho rằng lợi ích vượt trội hơn hạn chế."},
+    {cat:"Ý kiến & Tranh luận", en:"Not everyone agrees that remote work improves efficiency.", vi:"Không phải ai cũng đồng ý rằng làm việc từ xa cải thiện hiệu quả."},
+    {cat:"Kể chuyện", en:"By the time we arrived, the meeting had already started.", vi:"Đến lúc chúng tôi tới nơi, cuộc họp đã bắt đầu rồi."},
+    {cat:"Kể chuyện", en:"I wish I hadn't missed that opportunity last year.", vi:"Giá như tôi đã không bỏ lỡ cơ hội đó năm ngoái."},
+    {cat:"Kể chuyện", en:"Having finished the report, she finally went home to rest.", vi:"Sau khi hoàn thành báo cáo, cô ấy cuối cùng cũng về nhà nghỉ ngơi."},
+    {cat:"Giao tiếp trang trọng", en:"I would be grateful if you could confirm the schedule at your earliest convenience.", vi:"Tôi sẽ rất biết ơn nếu bạn có thể xác nhận lịch trình sớm nhất có thể."},
+    {cat:"Giao tiếp trang trọng", en:"Would it be possible to postpone the appointment until next week?", vi:"Liệu có thể dời cuộc hẹn sang tuần sau được không?"},
+    {cat:"Giao tiếp trang trọng", en:"I apologize for any inconvenience this may have caused.", vi:"Tôi xin lỗi vì bất kỳ sự bất tiện nào điều này có thể đã gây ra."},
+    {cat:"Du lịch", en:"Despite the heavy rain, we decided to carry on with the trip.", vi:"Bất chấp trời mưa to, chúng tôi vẫn quyết định tiếp tục chuyến đi."},
+    {cat:"Du lịch", en:"It's worth visiting the old quarter if you have some spare time.", vi:"Đáng để ghé thăm khu phố cổ nếu bạn có thời gian rảnh."},
+    {cat:"Du lịch", en:"We ended up staying an extra night because the flight got delayed.", vi:"Cuối cùng chúng tôi phải ở thêm một đêm vì chuyến bay bị hoãn."},
+    {cat:"Sức khỏe", en:"Regular exercise has been shown to reduce stress significantly.", vi:"Tập thể dục đều đặn đã được chứng minh làm giảm căng thẳng đáng kể."},
+    {cat:"Sức khỏe", en:"He was advised to cut down on sugar and caffeine.", vi:"Anh ấy được khuyên nên giảm bớt đường và caffeine."},
+    {cat:"Sức khỏe", en:"If she had rested properly, she wouldn't have gotten so sick.", vi:"Nếu cô ấy nghỉ ngơi đúng cách, cô ấy đã không bị ốm nặng như vậy."},
+    {cat:"Môi trường", en:"Plastic waste continues to pose a serious threat to marine life.", vi:"Rác thải nhựa tiếp tục gây ra mối đe dọa nghiêm trọng cho sinh vật biển."},
+    {cat:"Môi trường", en:"Governments are being urged to invest more in renewable energy.", vi:"Các chính phủ đang được kêu gọi đầu tư nhiều hơn vào năng lượng tái tạo."},
+    {cat:"Môi trường", en:"Unless we take action now, the situation will only get worse.", vi:"Trừ khi chúng ta hành động ngay bây giờ, tình hình sẽ chỉ tệ hơn."},
+    {cat:"Công nghệ", en:"Artificial intelligence is transforming the way we work and communicate.", vi:"Trí tuệ nhân tạo đang thay đổi cách chúng ta làm việc và giao tiếp."},
+    {cat:"Công nghệ", en:"The app crashes every time I try to upload a large file.", vi:"Ứng dụng bị treo mỗi khi tôi cố tải lên một tệp lớn."},
+    {cat:"Công nghệ", en:"Cybersecurity has become a top priority for most companies.", vi:"An ninh mạng đã trở thành ưu tiên hàng đầu đối với hầu hết các công ty."},
+    {cat:"Công việc", en:"He got promoted despite having less experience than his colleagues.", vi:"Anh ấy được thăng chức dù ít kinh nghiệm hơn đồng nghiệp."},
+    {cat:"Công việc", en:"I'm not entirely comfortable with how the decision was made.", vi:"Tôi không hoàn toàn thoải mái với cách quyết định được đưa ra."},
+    {cat:"Công việc", en:"The team pulled off an impressive turnaround in just one quarter.", vi:"Đội đã xoay chuyển tình thế ấn tượng chỉ trong một quý."},
+    {cat:"Công việc", en:"She tends to take on more than she can handle.", vi:"Cô ấy có xu hướng ôm đồm nhiều việc hơn khả năng."},
+    {cat:"Công việc", en:"We're short-staffed, so everyone has to pitch in.", vi:"Chúng tôi thiếu nhân sự nên mọi người phải cùng chung tay."},
+    {cat:"Công việc", en:"It's about time we addressed this recurring problem.", vi:"Đã đến lúc chúng ta giải quyết vấn đề lặp đi lặp lại này."},
+    {cat:"Công việc", en:"I'd like to bring up an issue that's been overlooked.", vi:"Tôi muốn nêu lên một vấn đề đã bị bỏ qua."},
+    {cat:"Công việc", en:"He was let go after the company downsized.", vi:"Anh ấy bị sa thải sau khi công ty tinh giản."},
+    {cat:"Công việc", en:"We're overwhelmed with work this week.", vi:"Chúng tôi ngập trong công việc tuần này."},
+    {cat:"Công việc", en:"The new policy has stirred up quite a bit of controversy among staff.", vi:"Chính sách mới đã gây ra khá nhiều tranh cãi trong nhân viên."},
+    {cat:"Ý kiến & Tranh luận", en:"Critics argue that the policy does more harm than good.", vi:"Người chỉ trích cho rằng chính sách này gây hại nhiều hơn lợi."},
+    {cat:"Ý kiến & Tranh luận", en:"There's a strong case to be made for both sides of this debate.", vi:"Có lập luận vững chắc cho cả hai phía trong cuộc tranh luận này."},
+    {cat:"Ý kiến & Tranh luận", en:"It's easy to overlook the long-term consequences of quick decisions.", vi:"Dễ dàng bỏ qua hậu quả lâu dài của những quyết định vội vàng."},
+    {cat:"Ý kiến & Tranh luận", en:"Some would say the risks far outweigh the potential rewards.", vi:"Một số người cho rằng rủi ro vượt xa lợi ích tiềm năng."},
+    {cat:"Ý kiến & Tranh luận", en:"This issue is more nuanced than most people realize.", vi:"Vấn đề này phức tạp hơn nhiều người nghĩ."},
+    {cat:"Ý kiến & Tranh luận", en:"I can see where you're coming from, but I still disagree.", vi:"Tôi hiểu quan điểm của bạn, nhưng tôi vẫn không đồng ý."},
+    {cat:"Ý kiến & Tranh luận", en:"The evidence doesn't fully support that conclusion.", vi:"Bằng chứng không hoàn toàn ủng hộ kết luận đó."},
+    {cat:"Ý kiến & Tranh luận", en:"It's a controversial topic that divides public opinion.", vi:"Đây là một chủ đề gây tranh cãi và chia rẽ dư luận."},
+    {cat:"Ý kiến & Tranh luận", en:"We shouldn't jump to conclusions without more data.", vi:"Chúng ta không nên vội kết luận khi chưa có đủ dữ liệu."},
+    {cat:"Ý kiến & Tranh luận", en:"At the end of the day, it comes down to personal values.", vi:"Cuối cùng thì mọi thứ đều tùy thuộc vào giá trị cá nhân của mỗi người."},
+    {cat:"Kể chuyện", en:"No sooner had I sat down than the phone rang.", vi:"Tôi vừa ngồi xuống thì điện thoại reo."},
+    {cat:"Kể chuyện", en:"Little by little, she gained the confidence to speak up.", vi:"Từng chút một, cô ấy đã có được sự tự tin để lên tiếng."},
+    {cat:"Kể chuyện", en:"It wasn't until years later that I understood his decision.", vi:"Phải nhiều năm sau tôi mới hiểu được quyết định của anh ấy."},
+    {cat:"Kể chuyện", en:"I'd been putting off the trip for so long that I almost gave up on it.", vi:"Tôi đã trì hoãn chuyến đi lâu đến mức suýt từ bỏ nó."},
+    {cat:"Kể chuyện", en:"Everything changed the moment I got that phone call.", vi:"Mọi thứ thay đổi ngay khoảnh khắc tôi nhận được cuộc gọi đó."},
+    {cat:"Kể chuyện", en:"Looking back, I probably should have taken that job offer.", vi:"Nhìn lại, có lẽ tôi nên nhận lời mời làm việc đó."},
+    {cat:"Kể chuyện", en:"We'd hardly arrived when the storm hit.", vi:"Chúng tôi vừa đến nơi thì cơn bão ập tới."},
+    {cat:"Kể chuyện", en:"It was one of those days that seemed to drag on forever.", vi:"Đó là một trong những ngày dường như kéo dài mãi."},
+    {cat:"Kể chuyện", en:"I never thought I'd end up living in another country.", vi:"Tôi chưa bao giờ nghĩ mình sẽ sống ở một đất nước khác."},
+    {cat:"Kể chuyện", en:"That experience taught me more than any textbook ever could.", vi:"Trải nghiệm đó đã dạy tôi nhiều hơn bất kỳ cuốn sách giáo khoa nào."},
+    {cat:"Giao tiếp trang trọng", en:"We would appreciate it if you could respond at your earliest convenience.", vi:"Chúng tôi sẽ rất cảm kích nếu bạn có thể phản hồi sớm nhất có thể."},
+    {cat:"Giao tiếp trang trọng", en:"Please find attached the documents you requested.", vi:"Đính kèm là các tài liệu bạn đã yêu cầu."},
+    {cat:"Giao tiếp trang trọng", en:"Should you require further information, do not hesitate to contact us.", vi:"Nếu bạn cần thêm thông tin, xin đừng ngần ngại liên hệ với chúng tôi."},
+    {cat:"Giao tiếp trang trọng", en:"We regret any inconvenience this delay may have caused.", vi:"Chúng tôi rất tiếc vì sự bất tiện mà việc chậm trễ này có thể gây ra."},
+    {cat:"Giao tiếp trang trọng", en:"Thank you for bringing this matter to our attention.", vi:"Cảm ơn bạn đã lưu ý vấn đề này với chúng tôi."},
+    {cat:"Giao tiếp trang trọng", en:"We look forward to hearing from you soon.", vi:"Chúng tôi mong sớm nhận được phản hồi từ bạn."},
+    {cat:"Giao tiếp trang trọng", en:"I am writing to follow up on our previous conversation.", vi:"Tôi viết thư này để theo dõi lại cuộc trò chuyện trước đó của chúng ta."},
+    {cat:"Giao tiếp trang trọng", en:"Kindly confirm your attendance by the end of the week.", vi:"Vui lòng xác nhận sự tham dự trước cuối tuần này."},
+    {cat:"Giao tiếp trang trọng", en:"We would like to formally request an extension of the deadline.", vi:"Chúng tôi muốn chính thức xin gia hạn thời hạn."},
+    {cat:"Giao tiếp trang trọng", en:"Please accept our sincere apologies for the misunderstanding.", vi:"Xin nhận lời xin lỗi chân thành của chúng tôi vì sự hiểu lầm này."},
+    {cat:"Du lịch", en:"Had we booked earlier, we would have gotten a better deal.", vi:"Nếu đặt vé sớm hơn, chúng tôi đã có được giá tốt hơn."},
+    {cat:"Du lịch", en:"The trip turned out to be far more eventful than we expected.", vi:"Chuyến đi hóa ra nhiều biến cố hơn chúng tôi tưởng."},
+    {cat:"Du lịch", en:"It's worth taking a detour just to see that waterfall.", vi:"Đáng để đi đường vòng chỉ để ngắm thác nước đó."},
+    {cat:"Du lịch", en:"We nearly missed our connecting flight because of the delay.", vi:"Chúng tôi suýt lỡ chuyến bay nối chuyến vì bị hoãn."},
+    {cat:"Du lịch", en:"Travelling off-season definitely has its perks.", vi:"Đi du lịch trái mùa chắc chắn có những lợi ích riêng."},
+    {cat:"Du lịch", en:"The locals were incredibly welcoming throughout our stay.", vi:"Người dân địa phương rất nồng hậu trong suốt chuyến đi của chúng tôi."},
+    {cat:"Du lịch", en:"We ended up changing our entire itinerary at the last minute.", vi:"Cuối cùng chúng tôi đã đổi toàn bộ lịch trình vào phút chót."},
+    {cat:"Du lịch", en:"I wouldn't recommend that route unless you have plenty of time.", vi:"Tôi sẽ không khuyên đi tuyến đó trừ khi bạn có nhiều thời gian."},
+    {cat:"Du lịch", en:"It's the kind of place that's hard to leave once you arrive.", vi:"Đó là kiểu nơi mà khó có thể rời đi một khi đã đến."},
+    {cat:"Du lịch", en:"We spent hours just wandering around without any real plan.", vi:"Chúng tôi đã dành hàng giờ chỉ để lang thang mà không có kế hoạch cụ thể."},
+    {cat:"Sức khỏe", en:"Chronic lack of sleep can gradually take a toll on your health.", vi:"Việc thiếu ngủ kéo dài có thể dần dần gây hại cho sức khỏe."},
+    {cat:"Sức khỏe", en:"He's finally getting the hang of managing his diabetes.", vi:"Cuối cùng anh ấy cũng đã quen với việc kiểm soát bệnh tiểu đường."},
+    {cat:"Sức khỏe", en:"It's easy to underestimate how much stress affects your body.", vi:"Dễ dàng đánh giá thấp mức độ căng thẳng ảnh hưởng đến cơ thể."},
+    {cat:"Sức khỏe", en:"She was put on medication to control her blood pressure.", vi:"Cô ấy được kê thuốc để kiểm soát huyết áp."},
+    {cat:"Sức khỏe", en:"I've noticed a real improvement since I cut back on caffeine.", vi:"Tôi nhận thấy sự cải thiện rõ rệt kể từ khi giảm caffeine."},
+    {cat:"Sức khỏe", en:"Ignoring symptoms for too long can lead to bigger problems.", vi:"Bỏ qua triệu chứng quá lâu có thể dẫn đến vấn đề lớn hơn."},
+    {cat:"Sức khỏe", en:"He bounced back remarkably fast after the operation.", vi:"Anh ấy hồi phục nhanh đáng kinh ngạc sau ca phẫu thuật."},
+    {cat:"Sức khỏe", en:"Mental health deserves just as much attention as physical health.", vi:"Sức khỏe tinh thần xứng đáng được quan tâm như sức khỏe thể chất."},
+    {cat:"Sức khỏe", en:"I've been trying to establish a more consistent sleep schedule.", vi:"Tôi đã cố gắng thiết lập một lịch ngủ đều đặn hơn."},
+    {cat:"Sức khỏe", en:"Overworking yourself will eventually catch up with you.", vi:"Làm việc quá sức rồi cũng sẽ để lại hậu quả về sau."},
+    {cat:"Môi trường", en:"Rising sea levels pose a growing threat to coastal communities.", vi:"Mực nước biển dâng đang đe dọa ngày càng lớn đến các cộng đồng ven biển."},
+    {cat:"Môi trường", en:"Recycling alone won't solve the plastic pollution crisis.", vi:"Chỉ tái chế thôi sẽ không giải quyết được khủng hoảng ô nhiễm nhựa."},
+    {cat:"Môi trường", en:"Deforestation continues at an alarming rate in many regions.", vi:"Nạn phá rừng vẫn tiếp diễn với tốc độ đáng báo động ở nhiều khu vực."},
+    {cat:"Môi trường", en:"Switching to public transport can significantly cut carbon emissions.", vi:"Chuyển sang phương tiện công cộng có thể giảm đáng kể lượng khí thải carbon."},
+    {cat:"Môi trường", en:"It's becoming harder to ignore the effects of climate change.", vi:"Ngày càng khó bỏ qua tác động của biến đổi khí hậu."},
+    {cat:"Môi trường", en:"Companies are under pressure to adopt greener practices.", vi:"Các công ty đang chịu áp lực phải áp dụng các phương thức xanh hơn."},
+    {cat:"Môi trường", en:"Air pollution in big cities has reached dangerous levels.", vi:"Ô nhiễm không khí ở các thành phố lớn đã đạt mức nguy hiểm."},
+    {cat:"Môi trường", en:"Conservation efforts have helped some endangered species recover.", vi:"Các nỗ lực bảo tồn đã giúp một số loài nguy cấp phục hồi."},
+    {cat:"Môi trường", en:"We need stricter regulations to protect our natural resources.", vi:"Chúng ta cần các quy định nghiêm ngặt hơn để bảo vệ tài nguyên thiên nhiên."},
+    {cat:"Môi trường", en:"Small everyday choices can add up to a big environmental impact.", vi:"Những lựa chọn nhỏ hàng ngày có thể cộng dồn thành tác động môi trường lớn."},
+    {cat:"Công nghệ", en:"It's amazing how much smartphones have changed our daily routines.", vi:"Thật đáng kinh ngạc khi điện thoại thông minh đã thay đổi thói quen hàng ngày của chúng ta nhiều đến vậy."},
+    {cat:"Công nghệ", en:"Data privacy has become a major concern for internet users.", vi:"Quyền riêng tư dữ liệu đã trở thành mối lo ngại lớn đối với người dùng internet."},
+    {cat:"Công nghệ", en:"The software update fixed most of the bugs we reported.", vi:"Bản cập nhật phần mềm đã sửa hầu hết các lỗi mà chúng tôi báo cáo."},
+    {cat:"Công nghệ", en:"Automation is replacing many repetitive manual tasks.", vi:"Tự động hóa đang thay thế nhiều công việc thủ công lặp đi lặp lại."},
+    {cat:"Công nghệ", en:"Cloud storage makes it easier to access files from anywhere.", vi:"Lưu trữ đám mây giúp việc truy cập tệp từ bất cứ đâu dễ dàng hơn."},
+    {cat:"Công nghệ", en:"Cybercriminals are constantly finding new ways to exploit systems.", vi:"Tội phạm mạng liên tục tìm ra những cách mới để khai thác hệ thống."},
+    {cat:"Công nghệ", en:"Voice assistants are becoming more common in everyday households.", vi:"Trợ lý giọng nói ngày càng phổ biến trong các hộ gia đình."},
+    {cat:"Công nghệ", en:"The company invested heavily in developing new algorithms.", vi:"Công ty đã đầu tư mạnh vào việc phát triển các thuật toán mới."},
+    {cat:"Công nghệ", en:"Remote work relies heavily on stable internet connections.", vi:"Làm việc từ xa phụ thuộc rất nhiều vào kết nối internet ổn định."},
+    {cat:"Công nghệ", en:"Technology keeps evolving faster than most people can keep up with.", vi:"Công nghệ không ngừng phát triển nhanh hơn tốc độ hầu hết mọi người có thể theo kịp."}
+  ],
+  C1: [
+    {cat:"Công việc & Sự nghiệp", en:"Had I known the negotiations would take this long, I would have allocated more time.", vi:"Nếu biết cuộc đàm phán sẽ kéo dài như vậy, tôi đã dành nhiều thời gian hơn."},
+    {cat:"Công việc & Sự nghiệp", en:"What really matters is how effectively the team adapts to change.", vi:"Điều thực sự quan trọng là đội ngũ thích ứng với thay đổi hiệu quả đến đâu."},
+    {cat:"Công việc & Sự nghiệp", en:"She's widely regarded as one of the most capable managers in the industry.", vi:"Cô ấy được đánh giá rộng rãi là một trong những quản lý có năng lực nhất ngành."},
+    {cat:"Tranh luận học thuật", en:"It could be argued that economic growth alone does not guarantee social progress.", vi:"Có thể lập luận rằng tăng trưởng kinh tế một mình không đảm bảo tiến bộ xã hội."},
+    {cat:"Tranh luận học thuật", en:"Seldom do we find a solution that satisfies every stakeholder involved.", vi:"Hiếm khi chúng ta tìm được một giải pháp làm hài lòng mọi bên liên quan."},
+    {cat:"Tranh luận học thuật", en:"The findings suggest a correlation, though not necessarily a causal one.", vi:"Kết quả nghiên cứu gợi ý mối tương quan, dù không nhất thiết là quan hệ nhân quả."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Little did I know that this decision would change my entire career path.", vi:"Tôi đâu ngờ rằng quyết định này sẽ thay đổi toàn bộ con đường sự nghiệp của mình."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Looking back, I realize how naive my assumptions were at the time.", vi:"Nhìn lại, tôi nhận ra những giả định của mình lúc đó ngây thơ đến mức nào."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Not until years later did I understand the significance of that conversation.", vi:"Mãi nhiều năm sau tôi mới hiểu được ý nghĩa của cuộc trò chuyện đó."},
+    {cat:"Giao tiếp trang trọng", en:"I would like to express my sincere appreciation for your continued support.", vi:"Tôi muốn bày tỏ lòng biết ơn chân thành vì sự hỗ trợ liên tục của bạn."},
+    {cat:"Giao tiếp trang trọng", en:"Should you have any further concerns, please do not hesitate to reach out.", vi:"Nếu bạn có bất kỳ mối bận tâm nào khác, xin đừng ngần ngại liên hệ."},
+    {cat:"Giao tiếp trang trọng", en:"We regret to inform you that the proposal has not been approved at this stage.", vi:"Chúng tôi rất tiếc phải thông báo rằng đề xuất chưa được phê duyệt ở giai đoạn này."},
+    {cat:"Văn hóa & Xã hội", en:"Cultural norms shape the way people perceive success and failure.", vi:"Các chuẩn mực văn hóa định hình cách con người nhìn nhận thành công và thất bại."},
+    {cat:"Văn hóa & Xã hội", en:"There has been a noticeable shift in attitudes toward work-life balance.", vi:"Đã có sự thay đổi rõ rệt trong thái độ đối với cân bằng công việc - cuộc sống."},
+    {cat:"Văn hóa & Xã hội", en:"Traditions, however outdated they may seem, still hold value for many communities.", vi:"Truyền thống, dù có vẻ lỗi thời, vẫn còn giá trị đối với nhiều cộng đồng."},
+    {cat:"Sức khỏe & Tâm lý", en:"Chronic stress can take a considerable toll on both mental and physical health.", vi:"Căng thẳng mãn tính có thể gây tổn hại đáng kể đến sức khỏe tinh thần lẫn thể chất."},
+    {cat:"Sức khỏe & Tâm lý", en:"It's not uncommon for burnout to go unnoticed until it becomes severe.", vi:"Không hiếm khi tình trạng kiệt sức bị bỏ qua cho đến khi trở nên nghiêm trọng."},
+    {cat:"Sức khỏe & Tâm lý", en:"Building resilience often requires confronting discomfort rather than avoiding it.", vi:"Xây dựng khả năng phục hồi thường đòi hỏi đối mặt với sự khó chịu thay vì né tránh nó."},
+    {cat:"Môi trường & PTBV", en:"Sustainable development hinges on balancing economic growth with environmental preservation.", vi:"Phát triển bền vững phụ thuộc vào việc cân bằng tăng trưởng kinh tế với bảo tồn môi trường."},
+    {cat:"Môi trường & PTBV", en:"Were it not for international cooperation, climate targets would be far harder to reach.", vi:"Nếu không có sự hợp tác quốc tế, các mục tiêu khí hậu sẽ khó đạt được hơn nhiều."},
+    {cat:"Môi trường & PTBV", en:"The consequences of inaction are becoming increasingly difficult to ignore.", vi:"Hậu quả của việc không hành động ngày càng khó bị bỏ qua."},
+    {cat:"Công nghệ & Đổi mới", en:"Emerging technologies are reshaping industries at an unprecedented pace.", vi:"Các công nghệ mới nổi đang định hình lại các ngành công nghiệp với tốc độ chưa từng có."},
+    {cat:"Công nghệ & Đổi mới", en:"Innovation, by its very nature, involves a certain degree of risk.", vi:"Đổi mới, xét theo bản chất của nó, luôn tiềm ẩn một mức độ rủi ro nhất định."},
+    {cat:"Công nghệ & Đổi mới", en:"As automation advances, the demand for adaptable skill sets grows accordingly.", vi:"Khi tự động hóa tiến bộ, nhu cầu về các kỹ năng linh hoạt cũng tăng theo."},
+    {cat:"Công việc & Sự nghiệp", en:"She navigated the corporate restructuring with remarkable composure.", vi:"Cô ấy đã điều hướng quá trình tái cơ cấu công ty với sự điềm tĩnh đáng nể."},
+    {cat:"Công việc & Sự nghiệp", en:"It's not so much the workload as the ambiguity that's draining.", vi:"Không hẳn là khối lượng công việc mà chính sự mơ hồ mới khiến kiệt sức."},
+    {cat:"Công việc & Sự nghiệp", en:"He built his career on a reputation for meticulous attention to detail.", vi:"Anh ấy xây dựng sự nghiệp dựa trên danh tiếng tỉ mỉ đến từng chi tiết."},
+    {cat:"Công việc & Sự nghiệp", en:"The merger has left many employees uncertain about their future.", vi:"Vụ sáp nhập đã khiến nhiều nhân viên bất an về tương lai của mình."},
+    {cat:"Công việc & Sự nghiệp", en:"Only in retrospect did the wisdom of that career move become apparent.", vi:"Chỉ khi nhìn lại, sự khôn ngoan của quyết định sự nghiệp đó mới trở nên rõ ràng."},
+    {cat:"Công việc & Sự nghiệp", en:"Climbing the corporate ladder often demands sacrifices few are willing to make.", vi:"Leo lên nấc thang sự nghiệp thường đòi hỏi những hy sinh mà ít ai sẵn lòng."},
+    {cat:"Công việc & Sự nghiệp", en:"Her leadership style has earned her considerable respect across departments.", vi:"Phong cách lãnh đạo của cô ấy đã giành được sự tôn trọng đáng kể từ các phòng ban."},
+    {cat:"Công việc & Sự nghiệp", en:"The layoffs were as unexpected as they were unsettling.", vi:"Đợt sa thải vừa bất ngờ vừa gây xáo trộn."},
+    {cat:"Công việc & Sự nghiệp", en:"He's carved out a niche for himself in an otherwise saturated market.", vi:"Anh ấy đã tạo được một chỗ đứng riêng trong một thị trường vốn đã bão hòa."},
+    {cat:"Công việc & Sự nghiệp", en:"Success in this field hinges as much on networking as on skill.", vi:"Thành công trong lĩnh vực này phụ thuộc vào quan hệ xã hội cũng nhiều như kỹ năng."},
+    {cat:"Tranh luận học thuật", en:"This theory, while influential, has not gone unchallenged.", vi:"Lý thuyết này, dù có ảnh hưởng lớn, không phải không gặp phải thách thức."},
+    {cat:"Tranh luận học thuật", en:"The data lends itself to multiple, sometimes conflicting, interpretations.", vi:"Dữ liệu cho phép nhiều cách diễn giải, đôi khi mâu thuẫn với nhau."},
+    {cat:"Tranh luận học thuật", en:"It would be premature to draw firm conclusions from such a limited sample.", vi:"Sẽ là vội vàng nếu đưa ra kết luận chắc chắn từ một mẫu hạn chế như vậy."},
+    {cat:"Tranh luận học thuật", en:"Critics contend that the methodology fails to account for confounding variables.", vi:"Người phản biện cho rằng phương pháp luận không tính đến các biến gây nhiễu."},
+    {cat:"Tranh luận học thuật", en:"The debate hinges on how one defines success in the first place.", vi:"Cuộc tranh luận xoay quanh cách người ta định nghĩa thành công ngay từ đầu."},
+    {cat:"Tranh luận học thuật", en:"Few would dispute the significance of this contribution to the field.", vi:"Ít ai phủ nhận tầm quan trọng của đóng góp này đối với lĩnh vực."},
+    {cat:"Tranh luận học thuật", en:"The study's limitations do not necessarily undermine its overall validity.", vi:"Những hạn chế của nghiên cứu không nhất thiết làm suy giảm tính hợp lệ tổng thể."},
+    {cat:"Tranh luận học thuật", en:"There is growing consensus, though not unanimity, on this issue.", vi:"Đang có sự đồng thuận ngày càng tăng, dù chưa hoàn toàn nhất trí, về vấn đề này."},
+    {cat:"Tranh luận học thuật", en:"One must be cautious not to conflate correlation with causation.", vi:"Cần thận trọng để không nhầm lẫn giữa tương quan và quan hệ nhân quả."},
+    {cat:"Tranh luận học thuật", en:"The implications of this research extend well beyond academia.", vi:"Ý nghĩa của nghiên cứu này vượt xa phạm vi học thuật."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"It's strange how a single scent can transport you back decades.", vi:"Thật lạ khi chỉ một mùi hương có thể đưa ta trở về hàng chục năm trước."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"I didn't fully grasp the weight of that moment until much later.", vi:"Mãi sau này tôi mới thực sự thấm thía trọng lượng của khoảnh khắc đó."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"There's a bittersweet quality to remembering those years so vividly.", vi:"Có một sắc thái vừa ngọt ngào vừa cay đắng khi nhớ lại những năm tháng đó thật rõ nét."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"What stands out most, oddly enough, are the smallest details.", vi:"Điều đọng lại nhất, lạ thay, lại là những chi tiết nhỏ nhặt nhất."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"I've come to see that failure as one of my greatest teachers.", vi:"Tôi đã dần nhận ra thất bại đó là một trong những người thầy vĩ đại nhất của mình."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"That chance encounter set off a chain of events I never anticipated.", vi:"Cuộc gặp gỡ tình cờ đó đã khởi đầu một chuỗi sự kiện tôi chưa từng lường trước."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Some memories fade, while others seem to sharpen with time.", vi:"Có những ký ức phai nhạt, trong khi những ký ức khác dường như sắc nét hơn theo thời gian."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"I was too young then to appreciate what I was witnessing.", vi:"Lúc đó tôi còn quá trẻ để hiểu hết những gì mình đang chứng kiến."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Reliving that period always brings a strange mix of nostalgia and regret.", vi:"Sống lại giai đoạn đó luôn mang đến một cảm giác pha trộn kỳ lạ giữa hoài niệm và tiếc nuối."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"It took distance, both in time and place, to make sense of it all.", vi:"Phải có khoảng cách, cả về thời gian lẫn không gian, mới có thể hiểu hết mọi chuyện."},
+    {cat:"Giao tiếp trang trọng", en:"We would be most grateful for your continued cooperation in this matter.", vi:"Chúng tôi sẽ vô cùng biết ơn sự hợp tác liên tục của quý vị trong vấn đề này."},
+    {cat:"Giao tiếp trang trọng", en:"Please rest assured that your concerns are being addressed with the utmost priority.", vi:"Xin quý vị yên tâm rằng những lo ngại của quý vị đang được ưu tiên giải quyết."},
+    {cat:"Giao tiếp trang trọng", en:"It is with great regret that we announce the postponement of the event.", vi:"Chúng tôi rất tiếc phải thông báo về việc hoãn sự kiện này."},
+    {cat:"Giao tiếp trang trọng", en:"We kindly request that all documentation be submitted no later than Friday.", vi:"Chúng tôi kính đề nghị mọi hồ sơ được nộp không trễ hơn thứ Sáu."},
+    {cat:"Giao tiếp trang trọng", en:"Your prompt attention to this matter would be greatly appreciated.", vi:"Sự lưu tâm kịp thời của quý vị đối với vấn đề này sẽ rất được trân trọng."},
+    {cat:"Giao tiếp trang trọng", en:"We wish to extend our heartfelt congratulations on this achievement.", vi:"Chúng tôi xin gửi lời chúc mừng chân thành nhất cho thành tựu này."},
+    {cat:"Giao tiếp trang trọng", en:"Should circumstances change, we will notify you accordingly.", vi:"Nếu hoàn cảnh thay đổi, chúng tôi sẽ thông báo cho quý vị."},
+    {cat:"Giao tiếp trang trọng", en:"We remain committed to resolving this matter in a timely manner.", vi:"Chúng tôi vẫn cam kết giải quyết vấn đề này một cách kịp thời."},
+    {cat:"Giao tiếp trang trọng", en:"Your understanding and patience throughout this process are much appreciated.", vi:"Sự thấu hiểu và kiên nhẫn của quý vị trong suốt quá trình này rất đáng trân trọng."},
+    {cat:"Giao tiếp trang trọng", en:"We trust that this explanation clarifies any outstanding concerns.", vi:"Chúng tôi tin rằng lời giải thích này đã làm rõ mọi băn khoăn còn lại."},
+    {cat:"Văn hóa & Xã hội", en:"Globalization has blurred the lines between distinct cultural identities.", vi:"Toàn cầu hóa đã làm mờ đi ranh giới giữa các bản sắc văn hóa riêng biệt."},
+    {cat:"Văn hóa & Xã hội", en:"Social hierarchies, though less visible today, still shape everyday interactions.", vi:"Các thứ bậc xã hội, dù ít lộ rõ hơn ngày nay, vẫn định hình các tương tác hàng ngày."},
+    {cat:"Văn hóa & Xã hội", en:"There's an ongoing tension between preserving heritage and embracing change.", vi:"Có một sự căng thẳng dai dẳng giữa việc bảo tồn di sản và đón nhận thay đổi."},
+    {cat:"Văn hóa & Xã hội", en:"Generational divides often stem from differing definitions of success.", vi:"Khoảng cách thế hệ thường bắt nguồn từ những định nghĩa khác nhau về thành công."},
+    {cat:"Văn hóa & Xã hội", en:"What one culture considers polite, another might view as distant.", vi:"Điều mà văn hóa này xem là lịch sự, văn hóa khác có thể xem là xa cách."},
+    {cat:"Văn hóa & Xã hội", en:"Urbanization has fundamentally altered traditional community structures.", vi:"Đô thị hóa đã làm thay đổi căn bản cấu trúc cộng đồng truyền thống."},
+    {cat:"Văn hóa & Xã hội", en:"Language carries far more cultural weight than most people realize.", vi:"Ngôn ngữ mang trọng lượng văn hóa lớn hơn nhiều người nghĩ."},
+    {cat:"Văn hóa & Xã hội", en:"Public discourse today is shaped as much by algorithms as by ideas.", vi:"Diễn ngôn công chúng ngày nay chịu ảnh hưởng bởi thuật toán không kém gì bởi ý tưởng."},
+    {cat:"Văn hóa & Xã hội", en:"Migration has enriched, and complicated, notions of national identity.", vi:"Di cư đã làm phong phú, và cũng làm phức tạp thêm, khái niệm về bản sắc dân tộc."},
+    {cat:"Văn hóa & Xã hội", en:"Customs that once seemed immutable are now being openly questioned.", vi:"Những phong tục từng có vẻ bất biến giờ đây đang bị công khai đặt câu hỏi."},
+    {cat:"Sức khỏe & Tâm lý", en:"Emotional exhaustion often masquerades as simple fatigue.", vi:"Kiệt sức về mặt cảm xúc thường bị nhầm lẫn với mệt mỏi thông thường."},
+    {cat:"Sức khỏe & Tâm lý", en:"Untreated anxiety can quietly seep into every corner of one's life.", vi:"Lo âu không được điều trị có thể âm thầm len lỏi vào mọi ngóc ngách cuộc sống."},
+    {cat:"Sức khỏe & Tâm lý", en:"Self-care is frequently mistaken for indulgence rather than necessity.", vi:"Việc chăm sóc bản thân thường bị hiểu nhầm là sự nuông chiều thay vì nhu cầu thiết yếu."},
+    {cat:"Sức khỏe & Tâm lý", en:"The stigma around mental illness still prevents many from seeking help.", vi:"Định kiến về bệnh tâm lý vẫn khiến nhiều người ngần ngại tìm kiếm sự giúp đỡ."},
+    {cat:"Sức khỏe & Tâm lý", en:"Coping mechanisms that once served us can become counterproductive over time.", vi:"Những cơ chế ứng phó từng giúp ích cho ta có thể trở nên phản tác dụng theo thời gian."},
+    {cat:"Sức khỏe & Tâm lý", en:"There's a fine line between healthy ambition and self-destructive perfectionism.", vi:"Có một ranh giới mong manh giữa tham vọng lành mạnh và chủ nghĩa hoàn hảo tự hủy hoại."},
+    {cat:"Sức khỏe & Tâm lý", en:"Trauma, left unaddressed, has a way of resurfacing unexpectedly.", vi:"Sang chấn tâm lý, nếu không được giải quyết, thường sẽ tái hiện một cách bất ngờ."},
+    {cat:"Sức khỏe & Tâm lý", en:"Genuine recovery requires more than simply suppressing symptoms.", vi:"Sự hồi phục thực sự đòi hỏi nhiều hơn là chỉ đơn giản kìm nén triệu chứng."},
+    {cat:"Sức khỏe & Tâm lý", en:"Isolation can exacerbate mental health struggles far more than people assume.", vi:"Sự cô lập có thể làm trầm trọng thêm vấn đề tâm lý hơn nhiều người nghĩ."},
+    {cat:"Sức khỏe & Tâm lý", en:"Therapy isn't a quick fix, but rather a gradual process of understanding oneself.", vi:"Trị liệu không phải là giải pháp tức thời, mà là một quá trình dần dần để hiểu chính mình."},
+    {cat:"Môi trường & PTBV", en:"Environmental degradation rarely respects national borders.", vi:"Suy thoái môi trường hiếm khi tôn trọng biên giới quốc gia."},
+    {cat:"Môi trường & PTBV", en:"Short-term economic gains often come at a steep long-term ecological cost.", vi:"Lợi ích kinh tế ngắn hạn thường đi kèm cái giá sinh thái đắt đỏ về lâu dài."},
+    {cat:"Môi trường & PTBV", en:"The circular economy offers a promising alternative to unchecked consumption.", vi:"Kinh tế tuần hoàn mang lại một giải pháp thay thế đầy hứa hẹn cho tiêu dùng không kiểm soát."},
+    {cat:"Môi trường & PTBV", en:"Without systemic change, individual efforts alone will fall short.", vi:"Nếu không có thay đổi mang tính hệ thống, nỗ lực cá nhân sẽ không đủ."},
+    {cat:"Môi trường & PTBV", en:"Biodiversity loss is as much a crisis as climate change itself.", vi:"Mất đa dạng sinh học là một cuộc khủng hoảng không kém gì biến đổi khí hậu."},
+    {cat:"Môi trường & PTBV", en:"Renewable energy adoption has outpaced even the most optimistic projections.", vi:"Việc áp dụng năng lượng tái tạo đã vượt xa cả những dự đoán lạc quan nhất."},
+    {cat:"Môi trường & PTBV", en:"Corporations are increasingly held accountable for their environmental footprint.", vi:"Các tập đoàn ngày càng phải chịu trách nhiệm về dấu chân môi trường của mình."},
+    {cat:"Môi trường & PTBV", en:"Sustainable practices must be woven into policy, not treated as an afterthought.", vi:"Các thực hành bền vững cần được lồng ghép vào chính sách, chứ không phải là ý nghĩ thêm vào sau."},
+    {cat:"Môi trường & PTBV", en:"The window for meaningful climate action is narrowing by the year.", vi:"Khoảng thời gian còn lại để hành động khí hậu có ý nghĩa đang thu hẹp dần theo từng năm."},
+    {cat:"Môi trường & PTBV", en:"Adapting to environmental change is no longer optional, but imperative.", vi:"Thích ứng với biến đổi môi trường không còn là lựa chọn, mà là điều bắt buộc."},
+    {cat:"Công nghệ & Đổi mới", en:"Artificial intelligence raises as many ethical questions as it answers practical ones.", vi:"Trí tuệ nhân tạo đặt ra nhiều câu hỏi đạo đức không kém gì các câu hỏi thực tiễn mà nó giải quyết."},
+    {cat:"Công nghệ & Đổi mới", en:"Disruptive technologies tend to render existing business models obsolete overnight.", vi:"Công nghệ đột phá có xu hướng khiến các mô hình kinh doanh hiện tại trở nên lỗi thời chỉ sau một đêm."},
+    {cat:"Công nghệ & Đổi mới", en:"The line between innovation and overreach is often only clear in hindsight.", vi:"Ranh giới giữa đổi mới và vượt quá giới hạn thường chỉ rõ ràng khi nhìn lại."},
+    {cat:"Công nghệ & Đổi mới", en:"Data has arguably become the most valuable resource of this century.", vi:"Có thể nói dữ liệu đã trở thành nguồn tài nguyên quý giá nhất của thế kỷ này."},
+    {cat:"Công nghệ & Đổi mới", en:"Technological literacy is now as essential as reading and writing.", vi:"Hiểu biết công nghệ giờ đây quan trọng không kém gì đọc và viết."},
+    {cat:"Công nghệ & Đổi mới", en:"Innovation without regulation can easily outpace our ability to manage its consequences.", vi:"Đổi mới thiếu quy định dễ dàng vượt xa khả năng kiểm soát hậu quả của chúng ta."},
+    {cat:"Công nghệ & Đổi mới", en:"Automation threatens to widen the gap between skilled and unskilled labor.", vi:"Tự động hóa có nguy cơ nới rộng khoảng cách giữa lao động có tay nghề và không có tay nghề."},
+    {cat:"Công nghệ & Đổi mới", en:"The next wave of innovation will likely be defined by how we handle its risks.", vi:"Làn sóng đổi mới tiếp theo có lẽ sẽ được định hình bởi cách chúng ta xử lý rủi ro của nó."},
+    {cat:"Công nghệ & Đổi mới", en:"Digital transformation has reshaped entire industries within a single decade.", vi:"Chuyển đổi số đã định hình lại toàn bộ các ngành công nghiệp chỉ trong một thập kỷ."},
+    {cat:"Công nghệ & Đổi mới", en:"Trust in technology hinges largely on transparency in how it's used.", vi:"Niềm tin vào công nghệ phần lớn phụ thuộc vào tính minh bạch trong cách nó được sử dụng."}
+  ],
+  C2: [
+    {cat:"Công việc & Sự nghiệp", en:"Were the board to greenlight this initiative, it would mark a watershed moment for the company.", vi:"Nếu hội đồng quản trị bật đèn xanh cho sáng kiến này, đó sẽ là một bước ngoặt đối với công ty."},
+    {cat:"Công việc & Sự nghiệp", en:"Her meteoric rise through the ranks was as much a product of tenacity as of talent.", vi:"Sự thăng tiến thần tốc của cô ấy trong công việc là kết quả của cả sự kiên trì lẫn tài năng."},
+    {cat:"Công việc & Sự nghiệp", en:"The negotiations, fraught with tension, ultimately hinged on a single contentious clause.", vi:"Cuộc đàm phán, đầy căng thẳng, cuối cùng xoay quanh một điều khoản gây tranh cãi duy nhất."},
+    {cat:"Tranh luận học thuật", en:"One could scarcely overstate the significance of this discovery for the field.", vi:"Khó có thể phóng đại tầm quan trọng của phát hiện này đối với lĩnh vực."},
+    {cat:"Tranh luận học thuật", en:"The argument, while superficially compelling, ultimately falls apart under closer scrutiny.", vi:"Lập luận này, dù bề ngoài có vẻ thuyết phục, cuối cùng lại sụp đổ khi xem xét kỹ hơn."},
+    {cat:"Tranh luận học thuật", en:"Rarely has a theory been so thoroughly vindicated by subsequent evidence.", vi:"Hiếm khi một lý thuyết được minh chứng đầy đủ đến vậy bởi các bằng chứng sau đó."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Had fate dealt a different hand, my entire trajectory might have unfolded otherwise.", vi:"Nếu số phận đã an bài khác đi, cả con đường đời tôi có lẽ đã diễn ra khác."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"In hindsight, that fleeting encounter proved to be a turning point I never saw coming.", vi:"Nhìn lại, cuộc gặp gỡ thoáng qua đó hóa ra lại là bước ngoặt mà tôi chưa từng lường trước."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Memory, ever the unreliable narrator, has softened the edges of that ordeal.", vi:"Ký ức, vốn luôn là người kể chuyện không đáng tin, đã làm dịu bớt những góc cạnh của thử thách đó."},
+    {cat:"Giao tiếp trang trọng", en:"It would be remiss of me not to acknowledge the invaluable contribution of the entire team.", vi:"Sẽ là thiếu sót nếu tôi không ghi nhận đóng góp vô giá của cả đội ngũ."},
+    {cat:"Giao tiếp trang trọng", en:"We trust this arrangement meets with your approval, and we remain at your disposal for any clarification.", vi:"Chúng tôi tin rằng sự sắp xếp này được sự đồng ý của quý vị, và chúng tôi luôn sẵn sàng nếu cần làm rõ thêm."},
+    {cat:"Giao tiếp trang trọng", en:"Please accept our profound apologies for any inadvertent oversight on our part.", vi:"Xin nhận lời xin lỗi sâu sắc của chúng tôi vì bất kỳ sơ suất ngoài ý muốn nào từ phía chúng tôi."},
+    {cat:"Văn hóa & Xã hội", en:"Societal expectations, deeply entrenched though they are, are not impervious to change.", vi:"Những kỳ vọng xã hội, dù đã ăn sâu bén rễ, vẫn không phải là bất biến trước sự thay đổi."},
+    {cat:"Văn hóa & Xã hội", en:"The tension between tradition and modernity permeates nearly every facet of contemporary life.", vi:"Sự căng thẳng giữa truyền thống và hiện đại thấm sâu vào hầu như mọi khía cạnh của đời sống đương đại."},
+    {cat:"Văn hóa & Xã hội", en:"What passes for progress in one generation may well be regarded with skepticism by the next.", vi:"Điều được xem là tiến bộ ở thế hệ này rất có thể sẽ bị thế hệ sau nhìn nhận với sự hoài nghi."},
+    {cat:"Sức khỏe & Tâm lý", en:"The insidious nature of chronic stress lies in how imperceptibly it erodes one's wellbeing.", vi:"Bản chất âm thầm của căng thẳng mãn tính nằm ở chỗ nó bào mòn sức khỏe tinh thần một cách khó nhận ra."},
+    {cat:"Sức khỏe & Tâm lý", en:"Resilience, far from being an innate trait, is more accurately described as a cultivated discipline.", vi:"Khả năng phục hồi, thay vì là một đặc điểm bẩm sinh, chính xác hơn là một kỷ luật được rèn giũa."},
+    {cat:"Sức khỏe & Tâm lý", en:"Left unchecked, burnout can quietly unravel even the most seemingly composed individuals.", vi:"Nếu không được kiểm soát, tình trạng kiệt sức có thể âm thầm làm sụp đổ ngay cả những người có vẻ điềm tĩnh nhất."},
+    {cat:"Môi trường & PTBV", en:"The planet's fate hangs in a delicate balance that we are only belatedly beginning to grasp.", vi:"Số phận hành tinh đang treo trên một thế cân bằng mong manh mà chúng ta chỉ mới bắt đầu nhận ra một cách muộn màng."},
+    {cat:"Môi trường & PTBV", en:"Absent decisive intervention, the erosion of biodiversity will likely prove irreversible.", vi:"Nếu không có sự can thiệp quyết liệt, sự suy giảm đa dạng sinh học nhiều khả năng sẽ không thể đảo ngược."},
+    {cat:"Môi trường & PTBV", en:"Sustainability, once a peripheral concern, has moved to the very heart of corporate strategy.", vi:"Tính bền vững, từng là mối quan tâm bên lề, nay đã trở thành trọng tâm cốt lõi của chiến lược doanh nghiệp."},
+    {cat:"Công nghệ & Đổi mới", en:"The pace of technological disruption shows scant sign of abating anytime soon.", vi:"Tốc độ gián đoạn công nghệ cho thấy rất ít dấu hiệu chậm lại trong tương lai gần."},
+    {cat:"Công nghệ & Đổi mới", en:"Innovation, for all its promise, invariably carries with it a residue of unintended consequences.", vi:"Đổi mới, dù đầy hứa hẹn, luôn kéo theo một số hệ quả ngoài ý muốn."},
+    {cat:"Công nghệ & Đổi mới", en:"What was once the stuff of science fiction has quietly become the fabric of everyday life.", vi:"Điều từng chỉ có trong khoa học viễn tưởng nay đã lặng lẽ trở thành một phần của đời sống thường nhật."},
+    {cat:"Công việc & Sự nghiệp", en:"Ambition, unmoored from principle, has a way of corroding everything it touches.", vi:"Tham vọng, khi tách rời khỏi nguyên tắc, có xu hướng ăn mòn mọi thứ nó chạm tới."},
+    {cat:"Công việc & Sự nghiệp", en:"She wields authority with a deftness that belies her relatively short tenure.", vi:"Cô ấy nắm quyền lực một cách khéo léo đến mức khó tin so với thời gian tại vị ngắn ngủi của mình."},
+    {cat:"Công việc & Sự nghiệp", en:"The reorganization, however necessary, left morale in tatters.", vi:"Cuộc tái cơ cấu, dù cần thiết, đã khiến tinh thần nhân viên tan nát."},
+    {cat:"Công việc & Sự nghiệp", en:"His ascent was not without its detractors, quietly circling in the wings.", vi:"Con đường thăng tiến của anh ấy không thiếu những người chỉ trích âm thầm rình rập."},
+    {cat:"Công việc & Sự nghiệp", en:"To call the negotiations delicate would be something of an understatement.", vi:"Gọi cuộc đàm phán là \"tế nhị\" có lẽ là một cách nói giảm nhẹ."},
+    {cat:"Công việc & Sự nghiệp", en:"She has an uncanny knack for turning adversity into opportunity.", vi:"Cô ấy có một khả năng kỳ lạ trong việc biến nghịch cảnh thành cơ hội."},
+    {cat:"Công việc & Sự nghiệp", en:"The firm's culture, once vaunted, now seems little more than a relic.", vi:"Văn hóa công ty, từng được ca ngợi, giờ đây dường như chỉ còn là tàn tích."},
+    {cat:"Công việc & Sự nghiệp", en:"Few careers unfold as linearly as they appear in retrospect.", vi:"Ít sự nghiệp nào diễn ra tuyến tính như vẻ ngoài khi nhìn lại."},
+    {cat:"Công việc & Sự nghiệp", en:"What passed for strategy was, in truth, little more than improvisation.", vi:"Cái được gọi là chiến lược thực chất chẳng qua chỉ là sự ứng biến."},
+    {cat:"Công việc & Sự nghiệp", en:"His resignation, though abrupt, had been quietly brewing for months.", vi:"Việc từ chức của anh ấy, dù đột ngột, đã âm thầm nhen nhóm từ nhiều tháng trước."},
+    {cat:"Tranh luận học thuật", en:"To dismiss the theory outright would be to ignore its considerable explanatory power.", vi:"Bác bỏ hoàn toàn lý thuyết này sẽ là bỏ qua sức giải thích đáng kể của nó."},
+    {cat:"Tranh luận học thuật", en:"The literature, voluminous as it is, remains curiously silent on this point.", vi:"Tài liệu nghiên cứu, dù đồ sộ, vẫn kỳ lạ im lặng về điểm này."},
+    {cat:"Tranh luận học thuật", en:"It is one thing to critique a framework; it is quite another to supplant it.", vi:"Phê phán một khung lý thuyết là một chuyện; thay thế nó lại là chuyện khác hoàn toàn."},
+    {cat:"Tranh luận học thuật", en:"The elegance of the argument belies the fragility of its underlying assumptions.", vi:"Sự tinh tế của lập luận che giấu tính mong manh trong các giả định nền tảng của nó."},
+    {cat:"Tranh luận học thuật", en:"Scholars remain divided, and perhaps irreconcilably so, on this very question.", vi:"Giới học giả vẫn còn chia rẽ, và có lẽ không thể hòa giải, về chính câu hỏi này."},
+    {cat:"Tranh luận học thuật", en:"What passes for rigor in this field would scarcely satisfy scrutiny in another.", vi:"Điều được xem là chặt chẽ trong lĩnh vực này khó lòng chịu được sự soi xét ở lĩnh vực khác."},
+    {cat:"Tranh luận học thuật", en:"The paper's contribution lies less in its conclusions than in its methodology.", vi:"Đóng góp của bài báo nằm ở phương pháp luận nhiều hơn là ở kết luận."},
+    {cat:"Tranh luận học thuật", en:"One is tempted to accept the hypothesis, were it not for the glaring counterexamples.", vi:"Người ta dễ bị cám dỗ chấp nhận giả thuyết, nếu không có những phản ví dụ rõ ràng."},
+    {cat:"Tranh luận học thuật", en:"The debate has long since outgrown its original, narrower framing.", vi:"Cuộc tranh luận từ lâu đã vượt ra ngoài khuôn khổ hẹp ban đầu của nó."},
+    {cat:"Tranh luận học thuật", en:"Consensus, however comforting, is not always synonymous with correctness.", vi:"Sự đồng thuận, dù an ủi, không phải lúc nào cũng đồng nghĩa với sự đúng đắn."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"There are moments that refuse to be diminished by the passage of time.", vi:"Có những khoảnh khắc không chịu phai nhạt dù thời gian trôi qua."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"It is only with the cruel clarity of hindsight that the pattern reveals itself.", vi:"Chỉ với sự sáng tỏ tàn nhẫn của việc nhìn lại, khuôn mẫu ấy mới lộ ra."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Nostalgia, that most seductive of liars, paints the past in flattering hues.", vi:"Hoài niệm, kẻ nói dối quyến rũ nhất, tô vẽ quá khứ bằng những sắc màu đẹp đẽ."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"What I recall most vividly is not the event itself, but its aftermath.", vi:"Điều tôi nhớ rõ nhất không phải là sự kiện đó, mà là hậu quả của nó."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Some chapters of one's life resist being neatly summarized, let alone explained.", vi:"Một số chương trong đời người không chịu được tóm gọn gọn gàng, càng khó giải thích rõ ràng."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"I have come to distrust my own memory of that period entirely.", vi:"Tôi đã dần không còn tin vào chính ký ức của mình về giai đoạn đó."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"It was a moment so fleeting, and yet it altered the course of everything after.", vi:"Đó là một khoảnh khắc thoáng qua đến vậy, nhưng lại thay đổi cả tiến trình sau này."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Grief, like memory, refuses to obey any predictable timeline.", vi:"Nỗi đau, cũng như ký ức, không chịu tuân theo bất kỳ dòng thời gian nào có thể đoán trước."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"Certain regrets have a way of calcifying rather than fading with age.", vi:"Một số hối tiếc có xu hướng cứng lại thay vì phai nhạt theo tuổi tác."},
+    {cat:"Kể chuyện & Hồi tưởng", en:"To narrate one's own past is, inevitably, an act of quiet fiction.", vi:"Kể lại quá khứ của chính mình, xét cho cùng, là một hành động hư cấu thầm lặng."},
+    {cat:"Giao tiếp trang trọng", en:"We wish to place on record our sincere gratitude for your unwavering support.", vi:"Chúng tôi xin ghi nhận lòng biết ơn chân thành vì sự ủng hộ không ngừng nghỉ của quý vị."},
+    {cat:"Giao tiếp trang trọng", en:"It would be disingenuous of us to suggest that no concerns remain.", vi:"Sẽ là không trung thực nếu chúng tôi cho rằng không còn mối lo ngại nào."},
+    {cat:"Giao tiếp trang trọng", en:"Please be assured that this matter is receiving our fullest attention.", vi:"Xin quý vị yên tâm rằng vấn đề này đang nhận được sự quan tâm cao nhất từ chúng tôi."},
+    {cat:"Giao tiếp trang trọng", en:"We would be remiss not to mention the considerable effort involved.", vi:"Chúng tôi sẽ thiếu sót nếu không nhắc đến nỗ lực đáng kể đã bỏ ra."},
+    {cat:"Giao tiếp trang trọng", en:"Any inconvenience arising from this decision is deeply regretted.", vi:"Chúng tôi vô cùng lấy làm tiếc về bất kỳ bất tiện nào phát sinh từ quyết định này."},
+    {cat:"Giao tiếp trang trọng", en:"We trust that the enclosed documentation will address any outstanding queries.", vi:"Chúng tôi tin rằng tài liệu đính kèm sẽ giải đáp mọi thắc mắc còn lại."},
+    {cat:"Giao tiếp trang trọng", en:"It is with a mixture of pride and humility that we announce this milestone.", vi:"Chúng tôi thông báo cột mốc này với cả niềm tự hào lẫn sự khiêm tốn."},
+    {cat:"Giao tiếp trang trọng", en:"We remain, as ever, at your complete disposal should further clarification be required.", vi:"Chúng tôi luôn sẵn lòng phục vụ quý vị nếu cần thêm sự làm rõ."},
+    {cat:"Giao tiếp trang trọng", en:"Kindly note that this arrangement is subject to review at a later date.", vi:"Xin lưu ý rằng thỏa thuận này có thể được xem xét lại vào một thời điểm sau."},
+    {cat:"Giao tiếp trang trọng", en:"We extend our warmest congratulations on this most deserving achievement.", vi:"Chúng tôi xin gửi lời chúc mừng nồng nhiệt nhất cho thành tựu hoàn toàn xứng đáng này."},
+    {cat:"Văn hóa & Xã hội", en:"Culture is less a fixed inheritance than a perpetually contested terrain.", vi:"Văn hóa không phải là một di sản cố định, mà là một địa hạt luôn bị tranh giành."},
+    {cat:"Văn hóa & Xã hội", en:"What is celebrated as progress in one era is often mourned as loss in another.", vi:"Điều được ca ngợi là tiến bộ ở thời đại này thường bị than tiếc là mất mát ở thời đại khác."},
+    {cat:"Văn hóa & Xã hội", en:"Identity, far from monolithic, is a mosaic assembled and reassembled over a lifetime.", vi:"Bản sắc, vốn không hề đơn nhất, là một bức khảm được ghép lại và ghép lại suốt đời người."},
+    {cat:"Văn hóa & Xã hội", en:"Societies rarely reckon with their past until confronted by an inescapable reckoning.", vi:"Các xã hội hiếm khi đối diện với quá khứ cho đến khi buộc phải đối mặt với nó."},
+    {cat:"Văn hóa & Xã hội", en:"The erosion of shared narratives has left many communities adrift.", vi:"Sự xói mòn của những câu chuyện chung đã khiến nhiều cộng đồng lạc lối."},
+    {cat:"Văn hóa & Xã hội", en:"Modernity's promise of liberation has not been evenly distributed.", vi:"Lời hứa giải phóng của thời hiện đại đã không được phân bổ đồng đều."},
+    {cat:"Văn hóa & Xã hội", en:"Tradition survives not by resisting change, but by absorbing it selectively.", vi:"Truyền thống tồn tại không phải bằng cách chống lại thay đổi, mà bằng cách chọn lọc hấp thu nó."},
+    {cat:"Văn hóa & Xã hội", en:"Collective memory is as much an act of forgetting as of remembering.", vi:"Ký ức tập thể vừa là hành động ghi nhớ vừa là hành động lãng quên."},
+    {cat:"Văn hóa & Xã hội", en:"The very notion of belonging has grown more fraught in an interconnected world.", vi:"Chính khái niệm về sự thuộc về đã trở nên phức tạp hơn trong một thế giới kết nối."},
+    {cat:"Văn hóa & Xã hội", en:"No culture is an island, however fiercely it may guard its borders.", vi:"Không nền văn hóa nào là một hòn đảo, dù nó có bảo vệ ranh giới của mình quyết liệt đến đâu."},
+    {cat:"Sức khỏe & Tâm lý", en:"The mind's capacity for self-deception is nowhere more evident than in matters of denial.", vi:"Khả năng tự lừa dối của tâm trí không ở đâu rõ ràng hơn trong những vấn đề phủ nhận."},
+    {cat:"Sức khỏe & Tâm lý", en:"Healing, unlike recovery, admits no fixed endpoint.", vi:"Chữa lành, khác với hồi phục, không có một điểm kết thúc cố định nào."},
+    {cat:"Sức khỏe & Tâm lý", en:"What we call resilience is often merely suffering that has learned to disguise itself.", vi:"Điều ta gọi là khả năng phục hồi thường chỉ là nỗi đau đã học cách ngụy trang chính nó."},
+    {cat:"Sức khỏe & Tâm lý", en:"The psyche has an unsettling talent for normalizing even the most untenable circumstances.", vi:"Tâm lý con người có một khả năng đáng lo ngại trong việc bình thường hóa cả những hoàn cảnh khó chấp nhận nhất."},
+    {cat:"Sức khỏe & Tâm lý", en:"Vulnerability, so often mistaken for weakness, is in fact a precondition for growth.", vi:"Sự dễ tổn thương, vốn thường bị hiểu nhầm là yếu đuối, thực ra là điều kiện tiên quyết cho sự trưởng thành."},
+    {cat:"Sức khỏe & Tâm lý", en:"Trauma reshapes not just memory, but the very architecture of perception.", vi:"Sang chấn không chỉ định hình lại ký ức, mà cả cấu trúc nhận thức."},
+    {cat:"Sức khỏe & Tâm lý", en:"The pursuit of wellbeing can, paradoxically, become its own source of anxiety.", vi:"Việc theo đuổi hạnh phúc, một cách nghịch lý, có thể trở thành nguồn gốc của chính sự lo âu."},
+    {cat:"Sức khỏe & Tâm lý", en:"There is a particular cruelty in illnesses that remain invisible to others.", vi:"Có một sự tàn nhẫn đặc biệt trong những căn bệnh vẫn vô hình trước mắt người khác."},
+    {cat:"Sức khỏe & Tâm lý", en:"To confront one's own fragility is perhaps the most disquieting form of honesty.", vi:"Đối diện với sự mong manh của chính mình có lẽ là hình thức trung thực đáng bất an nhất."},
+    {cat:"Sức khỏe & Tâm lý", en:"Suffering, left unexamined, tends to repeat itself in new disguises.", vi:"Nỗi đau, nếu không được nhìn nhận, có xu hướng lặp lại dưới những lớp vỏ mới."},
+    {cat:"Môi trường & PTBV", en:"Ecological collapse rarely announces itself; it accumulates in silence until it cannot be ignored.", vi:"Sự sụp đổ sinh thái hiếm khi báo trước; nó tích tụ trong im lặng cho đến khi không thể bị lờ đi."},
+    {cat:"Môi trường & PTBV", en:"Sustainability, taken seriously, demands a wholesale reimagining of prosperity itself.", vi:"Tính bền vững, nếu được coi trọng thực sự, đòi hỏi phải tưởng tượng lại toàn bộ khái niệm thịnh vượng."},
+    {cat:"Môi trường & PTBV", en:"We have inherited a planet whose ledgers we have yet to fully reconcile.", vi:"Chúng ta đã thừa hưởng một hành tinh mà những \"sổ sách\" của nó vẫn chưa được cân đối đầy đủ."},
+    {cat:"Môi trường & PTBV", en:"The rhetoric of green growth often obscures the arithmetic of finite resources.", vi:"Ngôn từ về tăng trưởng xanh thường che khuất bài toán tài nguyên hữu hạn."},
+    {cat:"Môi trường & PTBV", en:"Future generations will judge this era less by its innovations than by its restraint, or lack thereof.", vi:"Các thế hệ tương lai sẽ đánh giá thời đại này ít bởi sự đổi mới hơn là bởi sự tiết chế, hay sự thiếu tiết chế."},
+    {cat:"Môi trường & PTBV", en:"Environmental justice cannot be divorced from questions of economic inequality.", vi:"Công bằng môi trường không thể tách rời khỏi các vấn đề bất bình đẳng kinh tế."},
+    {cat:"Môi trường & PTBV", en:"What we call natural disasters are, with increasing frequency, disasters of our own making.", vi:"Điều ta gọi là thiên tai ngày càng thường xuyên là thảm họa do chính con người gây ra."},
+    {cat:"Môi trường & PTBV", en:"The planet's resilience has limits that we are only now beginning to test in earnest.", vi:"Khả năng phục hồi của hành tinh có giới hạn mà chúng ta chỉ mới bắt đầu thực sự thử thách."},
+    {cat:"Môi trường & PTBV", en:"Stewardship, not dominion, ought to define humanity's relationship with nature.", vi:"Sự quản lý, chứ không phải thống trị, mới nên định nghĩa mối quan hệ của nhân loại với thiên nhiên."},
+    {cat:"Môi trường & PTBV", en:"Denial, however comforting in the short term, is the costliest response of all.", vi:"Sự phủ nhận, dù an ủi trong ngắn hạn, lại là phản ứng tốn kém nhất."},
+    {cat:"Công nghệ & Đổi mới", en:"The velocity of technological change has outstripped our capacity to legislate it wisely.", vi:"Tốc độ thay đổi công nghệ đã vượt xa khả năng của chúng ta trong việc lập pháp một cách khôn ngoan."},
+    {cat:"Công nghệ & Đổi mới", en:"Innovation divorced from ethics is merely capability in search of consequence.", vi:"Đổi mới tách rời khỏi đạo đức chỉ đơn thuần là năng lực đi tìm hậu quả."},
+    {cat:"Công nghệ & Đổi mới", en:"We are, perhaps unwittingly, ceding ever more judgment to systems we barely understand.", vi:"Có lẽ một cách vô tình, chúng ta đang nhường ngày càng nhiều quyền phán xét cho những hệ thống mà ta hầu như không hiểu rõ."},
+    {cat:"Công nghệ & Đổi mới", en:"What was once the province of speculative fiction now sits quietly in our pockets.", vi:"Điều từng chỉ thuộc về khoa học viễn tưởng giờ đây lặng lẽ nằm gọn trong túi áo chúng ta."},
+    {cat:"Công nghệ & Đổi mới", en:"The algorithms shaping our attention answer to incentives rarely aligned with our wellbeing.", vi:"Các thuật toán định hình sự chú ý của chúng ta phục vụ những động lực hiếm khi phù hợp với lợi ích của chúng ta."},
+    {cat:"Công nghệ & Đổi mới", en:"Progress, in this domain, has a way of arriving faster than our wisdom to wield it.", vi:"Trong lĩnh vực này, tiến bộ thường đến nhanh hơn cả sự khôn ngoan để sử dụng nó."},
+    {cat:"Công nghệ & Đổi mới", en:"Digital infrastructure has become as indispensable, and as fragile, as any physical one.", vi:"Hạ tầng số đã trở nên không thể thiếu, và cũng mong manh, như bất kỳ hạ tầng vật chất nào."},
+    {cat:"Công nghệ & Đổi mới", en:"The illusion of neutrality in technology is perhaps its most dangerous feature.", vi:"Ảo tưởng về tính trung lập của công nghệ có lẽ là đặc điểm nguy hiểm nhất của nó."},
+    {cat:"Công nghệ & Đổi mới", en:"We have automated efficiency long before we have automated accountability.", vi:"Chúng ta đã tự động hóa hiệu quả từ lâu trước khi tự động hóa được trách nhiệm giải trình."},
+    {cat:"Công nghệ & Đổi mới", en:"Every leap in capability seems to be shadowed by an equal leap in unforeseen risk.", vi:"Mỗi bước nhảy vọt về năng lực dường như đi kèm một bước nhảy vọt tương xứng về rủi ro chưa lường trước."}
+  ],
+  NN: [
+    {cat:"Cơ khí", en:"I am studying mechanical engineering.", vi:"Tôi đang học ngành cơ khí."},
+    {cat:"Cơ khí", en:"Please check the machine before you turn it on.", vi:"Hãy kiểm tra máy trước khi bật nó lên."},
+    {cat:"Cơ khí", en:"Wear safety gloves and goggles in the workshop.", vi:"Hãy đeo găng tay và kính bảo hộ trong xưởng."},
+    {cat:"Cơ khí", en:"This part needs to be measured again.", vi:"Chi tiết này cần được đo lại."},
+    {cat:"Cơ khí", en:"The lathe is used to shape metal parts.", vi:"Máy tiện được dùng để gia công các chi tiết kim loại."},
+    {cat:"Cơ khí", en:"We need to replace this broken bearing.", vi:"Chúng ta cần thay vòng bi bị hỏng này."},
+    {cat:"Cơ khí", en:"Always follow the safety procedure in the workshop.", vi:"Luôn tuân thủ quy trình an toàn trong xưởng."},
+    {cat:"Cơ khí", en:"The technical drawing shows all the dimensions.", vi:"Bản vẽ kỹ thuật thể hiện tất cả các kích thước."},
+    {cat:"Điện - Điện tử", en:"I am majoring in electrical engineering.", vi:"Tôi học chuyên ngành điện - điện tử."},
+    {cat:"Điện - Điện tử", en:"Turn off the power before you touch the wires.", vi:"Hãy ngắt điện trước khi chạm vào dây điện."},
+    {cat:"Điện - Điện tử", en:"This circuit has a short circuit problem.", vi:"Mạch điện này bị lỗi chập mạch."},
+    {cat:"Điện - Điện tử", en:"Please check the voltage with a multimeter.", vi:"Hãy kiểm tra điện áp bằng đồng hồ vạn năng."},
+    {cat:"Điện - Điện tử", en:"The motor is not working properly.", vi:"Động cơ đang hoạt động không ổn định."},
+    {cat:"Điện - Điện tử", en:"We need to replace this fuse.", vi:"Chúng ta cần thay cầu chì này."},
+    {cat:"Điện - Điện tử", en:"Electrical safety is very important at work.", vi:"An toàn điện rất quan trọng trong công việc."},
+    {cat:"Điện - Điện tử", en:"This device converts AC power to DC power.", vi:"Thiết bị này chuyển đổi điện xoay chiều sang một chiều."},
+    {cat:"Công nghệ ô tô", en:"I am studying automotive technology.", vi:"Tôi đang học ngành công nghệ ô tô."},
+    {cat:"Công nghệ ô tô", en:"Please check the engine oil level.", vi:"Hãy kiểm tra mức dầu động cơ."},
+    {cat:"Công nghệ ô tô", en:"The brake system needs to be inspected.", vi:"Hệ thống phanh cần được kiểm tra."},
+    {cat:"Công nghệ ô tô", en:"This car has a strange noise from the engine.", vi:"Chiếc xe này có tiếng ồn lạ từ động cơ."},
+    {cat:"Công nghệ ô tô", en:"We need to change the tires soon.", vi:"Chúng ta cần thay lốp xe sớm."},
+    {cat:"Công nghệ ô tô", en:"The battery is completely dead.", vi:"Bình ắc quy đã hết điện hoàn toàn."},
+    {cat:"Công nghệ ô tô", en:"Please lift the car with the hydraulic jack.", vi:"Hãy nâng xe lên bằng kích thủy lực."},
+    {cat:"Công nghệ ô tô", en:"Regular maintenance keeps the car running well.", vi:"Bảo dưỡng định kỳ giúp xe vận hành tốt."},
+    {cat:"Công nghệ thông tin", en:"I am majoring in information technology.", vi:"Tôi học chuyên ngành công nghệ thông tin."},
+    {cat:"Công nghệ thông tin", en:"This code has a small bug in it.", vi:"Đoạn mã này có một lỗi nhỏ."},
+    {cat:"Công nghệ thông tin", en:"Please back up your data before updating.", vi:"Hãy sao lưu dữ liệu trước khi cập nhật."},
+    {cat:"Công nghệ thông tin", en:"The website is running slowly today.", vi:"Trang web hôm nay chạy chậm."},
+    {cat:"Công nghệ thông tin", en:"I need to fix this network connection.", vi:"Tôi cần khắc phục kết nối mạng này."},
+    {cat:"Công nghệ thông tin", en:"This app was built using JavaScript.", vi:"Ứng dụng này được xây dựng bằng JavaScript."},
+    {cat:"Công nghệ thông tin", en:"Please restart the server to apply the update.", vi:"Hãy khởi động lại máy chủ để áp dụng bản cập nhật."},
+    {cat:"Công nghệ thông tin", en:"We store the data in a cloud database.", vi:"Chúng tôi lưu dữ liệu trong cơ sở dữ liệu đám mây."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Welcome to our hotel. How may I help you?", vi:"Chào mừng quý khách đến khách sạn. Tôi có thể giúp gì cho quý khách?"},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Your room is on the fifth floor.", vi:"Phòng của quý khách ở tầng năm."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Would you like to see the menu?", vi:"Quý khách có muốn xem thực đơn không?"},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Breakfast is served from six to nine.", vi:"Bữa sáng được phục vụ từ sáu đến chín giờ."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"I would like to book a table for four.", vi:"Tôi muốn đặt một bàn cho bốn người."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"The tour bus leaves at eight tomorrow.", vi:"Xe du lịch sẽ khởi hành lúc tám giờ ngày mai."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Please enjoy your stay with us.", vi:"Kính chúc quý khách có kỳ nghỉ vui vẻ."},
+    {cat:"Du lịch - Nhà hàng - Khách sạn", en:"Can I have the bill, please?", vi:"Cho tôi xin hoá đơn được không?"},
+    {cat:"Kế toán", en:"I am studying accounting at BCTECH.", vi:"Tôi đang học ngành kế toán tại BCTECH."},
+    {cat:"Kế toán", en:"Please check this invoice carefully.", vi:"Hãy kiểm tra kỹ hoá đơn này."},
+    {cat:"Kế toán", en:"We need to submit the tax report this week.", vi:"Chúng ta cần nộp báo cáo thuế trong tuần này."},
+    {cat:"Kế toán", en:"This balance sheet does not match.", vi:"Bảng cân đối kế toán này không khớp."},
+    {cat:"Kế toán", en:"Please record this transaction in the ledger.", vi:"Hãy ghi giao dịch này vào sổ cái."},
+    {cat:"Kế toán", en:"The company's revenue increased this quarter.", vi:"Doanh thu công ty tăng trong quý này."},
+    {cat:"Kế toán", en:"We need to review the monthly expenses.", vi:"Chúng ta cần rà soát chi phí hàng tháng."},
+    {cat:"Kế toán", en:"Please prepare the salary payment list.", vi:"Hãy chuẩn bị danh sách chi trả lương."}
+  ]
+};
+
+let level = "A2";
+const LEVEL_LABELS = {A1:"A1", A2:"A2", B1:"B1", B2:"B2", C1:"C1", C2:"C2", NN:"Ngành nghề"};
+let selectedTopic = "ALL";
+let sentences = SETS[level];
+let current = 0;
+let scores = new Array(sentences.length).fill(null);
+let transcripts = new Array(sentences.length).fill("");
+
+/* voice gender preference for TTS sample */
+let voicePref = "female";
+function setVoicePref(p){
+  voicePref = p;
+  document.querySelectorAll('.voice-btn').forEach(b=>b.classList.toggle('active', b.dataset.voice===p));
+}
+function pickVoice(pref){
+  if(!('speechSynthesis' in window)) return {voice:null, confident:false};
+  const voices = window.speechSynthesis.getVoices().filter(v=>v.lang && v.lang.toLowerCase().startsWith('en'));
+  if(!voices.length) return {voice:null, confident:false};
+  // Lưu ý: dùng \b để tránh /male/i khớp nhầm vào chữ "feMALE"
+  const genderRegex = pref==='female' ? /\bfemale\b/i : /\bmale\b/i;
+  const oppositeGenderRegex = pref==='female' ? /\bmale\b/i : /\bfemale\b/i;
+  let match = voices.find(v=>genderRegex.test(v.name) && !oppositeGenderRegex.test(v.name));
+  if(match) return {voice:match, confident:true};
+  const knownFemale = ['zira','samantha','susan','karen','moira','tessa','victoria','fiona','ava','allison','serena','kate','joanna','salli','ivy','kimberly'];
+  const knownMale = ['david','daniel','alex','fred','george','oliver','james','arthur','ryan','mark','matthew','justin','joey'];
+  const list = pref==='female' ? knownFemale : knownMale;
+  const otherList = pref==='female' ? knownMale : knownFemale;
+  match = voices.find(v=> list.some(n=>v.name.toLowerCase().includes(n)));
+  if(match) return {voice:match, confident:true};
+  // Không tìm được giọng phân biệt rõ nam/nữ (thường gặp trên Android: chỉ có 1 giọng hệ thống,
+  // ví dụ "Google US English" dùng chung cho cả hai lựa chọn). Trả về giọng khả dụng đầu tiên,
+  // đánh dấu confident:false để playSample() tự chỉnh cao độ tạo khác biệt nam/nữ.
+  match = voices.find(v=> !otherList.some(n=>v.name.toLowerCase().includes(n)) && !oppositeGenderRegex.test(v.name));
+  return {voice: match || voices[0], confident:false};
+}
+
+/* topic filter */
+function getTopicsForLevel(lv){
+  return [...new Set(SETS[lv].map(s=>s.cat))];
+}
+function buildTopics(){
+  const row = document.getElementById('topicRow');
+  row.innerHTML = '';
+  const cats = getTopicsForLevel(level);
+  const chips = ["ALL", ...cats];
+  chips.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'topic-chip' + (selectedTopic===c ? ' active' : '');
+    btn.textContent = c==="ALL" ? "Tất cả chủ đề" : c;
+    btn.addEventListener('click', ()=>selectTopic(c));
+    row.appendChild(btn);
+  });
+}
+function selectTopic(t){
+  selectedTopic = t;
+  applyTopicFilter();
+  buildTopics();
+  renderCard();
+}
+function applyTopicFilter(){
+  sentences = selectedTopic==="ALL" ? SETS[level] : SETS[level].filter(s=>s.cat===selectedTopic);
+  if(sentences.length===0){ sentences = SETS[level]; selectedTopic="ALL"; }
+  current = 0;
+  scores = new Array(sentences.length).fill(null);
+  transcripts = new Array(sentences.length).fill("");
+}
+
+/* recognition mode detection */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognitionSupported = !!SpeechRec;
+let micAllowed = null; // becomes true/false after first attempt
+
+/* recorder state */
+let mediaRecorder=null, mediaStream=null, audioChunks=[], recordedBlobUrl=null;
+let isRecording=false, recTimerInterval=null, recSeconds=0;
+let audioCtx=null, analyser=null, sourceNode=null, rafId=null;
+let recognizer=null, liveTranscript="";
+let audioEl=null, isPlaying=false;
+
+function init(){
+  buildTopics();
+  buildRail();
+  renderCard();
+  document.getElementById('typedInput').value='';
+  setLogStatus(logIsConfigured() ? 'off' : 'off', logIsConfigured() ? 'Sẵn sàng gửi log' : 'Chưa cấu hình Apps Script logging (xem LOG_ENDPOINT trong code)');
+  renderStreakBadge();
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && 'ontouchend' in document);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  if((isIOS || isSafari) && !recognitionSupported){
+    const note = document.getElementById('iosNote');
+    if(note) note.classList.add('show');
+  }
+}
+
+function switchLevel(lv){
+  level = lv;
+  selectedTopic = "ALL";
+  sentences = SETS[lv];
+  current = 0;
+  scores = new Array(sentences.length).fill(null);
+  transcripts = new Array(sentences.length).fill("");
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.toggle('active', b.dataset.level===lv));
+  document.getElementById('stage').style.display='block';
+  document.getElementById('summary').classList.remove('show');
+  resetRecorderUI();
+  buildTopics();
+  buildRail();
+  renderCard();
+}
+
+function buildRail(){
+  const rail = document.getElementById('rail');
+  rail.innerHTML='';
+  sentences.forEach((_,i)=>{
+    const seg = document.createElement('div');
+    seg.className='rail-seg'+(scores[i]!==null?' done':(i===current?' current':''));
+    rail.appendChild(seg);
+  });
+}
+
+function renderCard(){
+  const s = sentences[current];
+  document.getElementById('eyebrowLabel').textContent = `Câu ${current+1} / ${sentences.length}`;
+  document.getElementById('eyebrowCat').textContent = s.cat;
+  document.getElementById('sentenceText').textContent = s.en;
+  document.getElementById('sentenceTranslation').textContent = s.vi;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').textContent = current===sentences.length-1 ? 'Xem kết quả →' : 'Câu tiếp →';
+  document.getElementById('scoreBtn').disabled = true;
+  document.getElementById('typedInput').value = transcripts[current] && !recognitionSupported ? transcripts[current] : '';
+  resetRecorderUI(true);
+  renderResult();
+  buildRail();
+
+  // choose UI mode
+  const useFallback = micAllowed===false;
+  document.getElementById('recorderPanel').style.display = useFallback ? 'none' : 'block';
+  document.getElementById('fallbackPanel').classList.toggle('show', useFallback);
+  if(useFallback) document.getElementById('scoreBtn').disabled = !document.getElementById('typedInput').value.trim();
+}
+
+function goTo(idx){
+  if(idx<0) return;
+  if(idx>=sentences.length){ showSummary(); return; }
+  current = idx;
+  renderCard();
+}
+
+/* ---------- TTS sample ---------- */
+function playSample(){
+  const text = sentences[current].en;
+  if(!('speechSynthesis' in window)){ alert('Trình duyệt không hỗ trợ đọc mẫu, nhưng bạn vẫn ghi âm và chấm điểm được.'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=0.92; u.volume=1;
+  const {voice: chosen, confident} = pickVoice(voicePref);
+  if(chosen) u.voice=chosen;
+  if(confident){
+    // Máy có giọng nam/nữ riêng biệt thật -> giữ cao độ tự nhiên
+    u.pitch = 1;
+  } else {
+    // Máy chỉ có 1 giọng hệ thống dùng chung (thường gặp trên Android) -> tự chỉnh cao độ
+    // để nam/nữ nghe khác nhau rõ rệt, dù vẫn là cùng một giọng nền.
+    u.pitch = voicePref === 'male' ? 0.78 : 1.2;
+    u.rate = voicePref === 'male' ? 0.88 : 0.95;
+  }
+  const note = document.getElementById('voiceFallbackNote');
+  if(note) note.classList.toggle('show', !confident);
+  const btn = document.getElementById('listenBtn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span>🔊</span> Đang đọc...';
+  btn.disabled = true;
+  u.onend = ()=>{ btn.innerHTML=orig; btn.disabled=false; };
+  u.onerror = ()=>{ btn.innerHTML=orig; btn.disabled=false; };
+  window.speechSynthesis.speak(u);
+  setTimeout(()=>{ btn.innerHTML=orig; btn.disabled=false; }, 6000);
+}
+if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = ()=>window.speechSynthesis.getVoices(); }
+
+/* ---------- recording + waveform ---------- */
+function resetRecorderUI(keepMode){
+  isRecording=false;
+  recSeconds=0;
+  clearInterval(recTimerInterval);
+  cancelAnimationFrame(rafId);
+  document.getElementById('recBtn').classList.remove('recording');
+  document.getElementById('recBtn').textContent='🎤';
+  document.getElementById('recTime').textContent='0:00';
+  document.getElementById('recState').textContent='Bấm mic để bắt đầu ghi âm giọng đọc của bạn.';
+  document.getElementById('playback').classList.remove('show');
+  if(!keepMode){ /* nothing extra */ }
+  const canvas = document.getElementById('wave');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth; canvas.height = 44;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+async function toggleRecording(){
+  if(isRecording){ stopRecording(); return; }
+  document.getElementById('playback').classList.remove('show');
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    micAllowed = true;
+  }catch(err){
+    micAllowed = false;
+    renderCard(); // switch to fallback mode
+    return;
+  }
+  startWaveform(mediaStream);
+  audioChunks = [];
+  liveTranscript = "";
+  try{
+    mediaRecorder = new MediaRecorder(mediaStream);
+  }catch(e){
+    document.getElementById('recState').textContent='Trình duyệt không hỗ trợ ghi âm. Dùng cách gõ/Gboard bên dưới.';
+    micAllowed = false;
+    renderCard();
+    return;
+  }
+  mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = ()=>{
+    const blob = new Blob(audioChunks, {type:'audio/webm'});
+    if(recordedBlobUrl) URL.revokeObjectURL(recordedBlobUrl);
+    recordedBlobUrl = URL.createObjectURL(blob);
+    document.getElementById('playback').classList.add('show');
+    document.getElementById('playbackLabel').textContent = `Bản ghi của bạn · ${formatTime(recSeconds)}`;
+    if(recognitionSupported){
+      transcripts[current] = liveTranscript.trim();
+      document.getElementById('scoreBtn').disabled = false;
+      document.getElementById('recState').textContent = liveTranscript.trim()
+        ? 'Đã nhận diện giọng nói. Bấm Chấm điểm để xem kết quả.'
+        : 'Không nhận diện được lời nói rõ ràng — thử ghi lại, nói to và chậm hơn.';
+    } else {
+      document.getElementById('scoreBtn').disabled = false;
+      document.getElementById('recState').textContent = 'Đã ghi âm xong. Gõ lại câu bạn vừa nói ở ô bên dưới rồi bấm Chấm điểm.';
+      document.getElementById('fallbackPanel').classList.add('show');
+    }
+  };
+  mediaRecorder.start();
+  isRecording = true;
+  recSeconds = 0;
+  document.getElementById('recBtn').classList.add('recording');
+  document.getElementById('recBtn').textContent='■';
+  document.getElementById('recState').textContent='Đang ghi âm... đọc to, rõ câu trên.';
+  recTimerInterval = setInterval(()=>{
+    recSeconds++;
+    document.getElementById('recTime').textContent = formatTime(recSeconds);
+    if(recSeconds>=30) stopRecording();
+  },1000);
+
+  if(recognitionSupported){
+    try{
+      recognizer = new SpeechRec();
+      recognizer.lang='en-US';
+      recognizer.continuous=true;
+      recognizer.interimResults=true;
+      recognizer.onresult = (ev)=>{
+        let text='';
+        for(let i=0;i<ev.results.length;i++){ text += ev.results[i][0].transcript + ' '; }
+        liveTranscript = text;
+      };
+      recognizer.onerror = ()=>{};
+      recognizer.start();
+    }catch(e){ recognitionSupported=false; }
+  }
+}
+
+function stopRecording(){
+  if(!isRecording) return;
+  isRecording=false;
+  clearInterval(recTimerInterval);
+  cancelAnimationFrame(rafId);
+  document.getElementById('recBtn').classList.remove('recording');
+  document.getElementById('recBtn').textContent='🎤';
+  if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+  if(recognizer){ try{ recognizer.stop(); }catch(e){} }
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); }
+  if(audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx=null; }
+}
+
+function formatTime(s){
+  const m = Math.floor(s/60), sec = s%60;
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function startWaveform(stream){
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize=64;
+  sourceNode = audioCtx.createMediaStreamSource(stream);
+  sourceNode.connect(analyser);
+  const canvas = document.getElementById('wave');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.clientWidth; canvas.height=44;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  function draw(){
+    rafId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const barWidth = canvas.width/bufferLength*1.6;
+    let x=0;
+    for(let i=0;i<bufferLength;i++){
+      const barHeight = (dataArray[i]/255)*canvas.height;
+      ctx.fillStyle = i%2===0 ? '#FF6B4A' : '#0E9C90';
+      ctx.fillRect(x, canvas.height-barHeight, barWidth-2, barHeight);
+      x += barWidth;
+    }
+  }
+  draw();
+}
+
+/* playback of recorded audio */
+function togglePlayback(){
+  if(!recordedBlobUrl) return;
+  if(!audioEl){ audioEl = new Audio(); audioEl.onended=()=>{ isPlaying=false; document.getElementById('playBtn').textContent='▶'; }; }
+  if(isPlaying){ audioEl.pause(); isPlaying=false; document.getElementById('playBtn').textContent='▶'; return; }
+  audioEl.src = recordedBlobUrl;
+  audioEl.play();
+  isPlaying=true;
+  document.getElementById('playBtn').textContent='❚❚';
+}
+
+/* ---------- typed fallback ---------- */
+function onTypedInput(){
+  const val = document.getElementById('typedInput').value.trim();
+  transcripts[current] = val;
+  document.getElementById('scoreBtn').disabled = !val;
+}
+
+/* ---------- scoring ---------- */
+function normalize(s){
+  return s.toLowerCase().replace(/’/g,"'").replace(/‘/g,"'")
+    .replace(/[^a-z0-9'\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+function tokenize(s){
+  const n = normalize(s);
+  if(!n) return [];
+  return n.replace(/i'm/g,'i am').split(' ').filter(Boolean);
+}
+function scoreWords(expected, typed){
+  const exp = tokenize(expected), typ = tokenize(typed);
+  const words = exp.map(w=>({word:w, ok:false}));
+  if(typ.length===0) return {score:0, matched:0, total:exp.length, missing:exp, words};
+  const typSet = new Set(typ);
+  let matched=0; const missing=[];
+  words.forEach(w=>{
+    if(typSet.has(w.word)){ w.ok=true; matched++; } else missing.push(w.word);
+  });
+  const score = Math.round((matched/exp.length)*100);
+  return {score, matched, total:exp.length, missing, words};
+}
+
+function paintResult(r, typed){
+  let ringColor=getComputedStyle(document.documentElement).getPropertyValue('--danger').trim(), label='Cần cố gắng';
+  if(r.score===100){ ringColor=getComputedStyle(document.documentElement).getPropertyValue('--teal').trim(); label='Xuất sắc!'; }
+  else if(r.score>=80){ ringColor=getComputedStyle(document.documentElement).getPropertyValue('--teal').trim(); label='Giỏi lắm!'; }
+  else if(r.score>=55){ ringColor=getComputedStyle(document.documentElement).getPropertyValue('--amber').trim(); label='Khá tốt'; }
+
+  let msg='';
+  if(r.score===100) msg='Chính xác! Bạn đọc đúng toàn bộ câu.';
+  else if(r.score>=80) msg=`Gần đúng rồi. Bạn khớp ${r.matched}/${r.total} từ.`;
+  else if(r.score>=55) msg=`Tạm ổn. Bạn khớp ${r.matched}/${r.total} từ, còn thiếu vài từ.`;
+  else msg=`Hãy thử lại. Bạn mới khớp ${r.matched}/${r.total} từ. Đọc chậm và rõ hơn.`;
+
+  let detail='';
+  if(r.score===100){
+    detail = 'Bạn đã khớp toàn bộ từ khoá. Đọc lại lần nữa để luyện phản xạ.';
+  }
+
+  const wordChips = (r.words||[]).map(w=>
+    `<span class="word-chip ${w.ok?'word-ok':'word-bad'}">${w.word}</span>`
+  ).join('');
+
+  const result = document.getElementById('result');
+  result.className='result show';
+  result.innerHTML = `
+    <div class="result-head">
+      <div class="score-ring" style="background:conic-gradient(${ringColor} ${r.score*3.6}deg, var(--line) 0deg)"><span>${r.score}%</span></div>
+      <div class="result-titles">
+        <div class="result-label">${label}</div>
+        <div class="result-frac">${r.matched}/${r.total} từ khớp</div>
+      </div>
+    </div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-detail">${detail}</div>
+    <div class="result-detail" style="margin-top:8px">${wordChips}</div>
+    <div class="transcript-note">${recognitionSupported && micAllowed ? 'Nhận diện tự động:' : 'Bạn đã nhập:'} “${(typed||'').replace(/</g,'&lt;')}”</div>
+  `;
+  buildRail();
+}
+
+function handleScore(){
+  const expected = sentences[current].en;
+  const typed = transcripts[current] || document.getElementById('typedInput').value.trim();
+  transcripts[current] = typed;
+  const r = scoreWords(expected, typed);
+  scores[current] = r.score;
+  paintResult(r, typed);
+
+  sendLog({
+    timestamp: Date.now(),
+    user: userName,
+    studentId: verifiedId || '',
+    className: verifiedClass || '',
+    level: LEVEL_LABELS[level] || level,
+    category: sentences[current].cat,
+    sentence: expected,
+    transcript: typed,
+    score: r.score,
+    matched: r.matched,
+    total: r.total,
+    mode: (recognitionSupported && micAllowed) ? 'auto-speech' : 'typed-fallback'
+  });
+}
+
+function renderResult(){
+  const result = document.getElementById('result');
+  if(scores[current]===null){ result.className='result'; result.innerHTML=''; return; }
+  // redisplay a previously scored answer without re-logging
+  const expected = sentences[current].en;
+  const typed = transcripts[current];
+  const r = scoreWords(expected, typed);
+  paintResult(r, typed);
+}
+
+/* ---------- summary ---------- */
+function showSummary(){
+  document.getElementById('stage').style.display='none';
+  document.getElementById('summary').classList.add('show');
+  const answered = scores.filter(s=>s!==null);
+  const avg = answered.length ? Math.round(answered.reduce((a,b)=>a+b,0)/answered.length) : 0;
+  document.getElementById('summaryScore').textContent = avg+'%';
+  const list = document.getElementById('summaryList');
+  list.innerHTML = sentences.map((s,i)=>{
+    const sc = scores[i];
+    const color = sc===null ? 'var(--muted)' : sc>=80 ? '#0B5F60' : sc>=55 ? '#7A5A00' : '#8E2A32';
+    return `<div class="summary-row"><span class="s-sentence">${s.en}</span><span style="color:${color};font-weight:700">${sc===null?'—':sc+'%'}</span></div>`;
+  }).join('');
+  if(answered.length>0) recordSession(avg, answered.length);
+}
+
+function restart(){
+  current=0;
+  scores = new Array(sentences.length).fill(null);
+  transcripts = new Array(sentences.length).fill("");
+  document.getElementById('stage').style.display='block';
+  document.getElementById('summary').classList.remove('show');
+  renderCard();
+}
+
+window.addEventListener('resize', ()=>{
+  const canvas = document.getElementById('wave');
+  if(canvas){ canvas.width = canvas.clientWidth; canvas.height=44; }
+});
+
+/* PWA: đăng ký service worker để app cài được lên máy và chạy offline */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "Voice Lab — Luyện nói tiếng Anh BCTECH",
+  "short_name": "Voice Lab",
+  "description": "Ứng dụng luyện nói tiếng Anh có chấm điểm cho giảng viên và sinh viên Trường Cao đẳng Kỹ thuật Công nghệ Bà Rịa – Vũng Tàu.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F4FA",
+  "theme_color": "#1B2A5B",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
