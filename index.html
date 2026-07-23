@@ -81,9 +81,10 @@ body{
 .name-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:16px;z-index:1}
 .id-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:8px;z-index:1}
 .id-input{
-  flex:0 0 118px;height:36px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 11px;
+  flex:0 0 100px;height:36px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 10px;
   font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
 }
+.id-input.class-input{flex:0 0 74px}
 .id-input::placeholder{color:rgba(255,255,255,.6)}
 .id-input:disabled{opacity:.75}
 .verify-btn{
@@ -93,6 +94,32 @@ body{
 .verify-note{font-size:11px;margin-top:6px;color:rgba(255,255,255,.78);z-index:1;position:relative}
 .verify-note.ok{color:#B9F5E5}
 .verify-note.err{color:#FFD3D0}
+
+/* card bài tập được giao (SV) */
+.assign-card{
+  display:none;background:linear-gradient(135deg,#FFF4EC,#FFFDF6);border:1px solid var(--accent-soft);
+  border-radius:18px;margin:14px 16px 0;padding:13px 15px;
+}
+.assign-card.show{display:block}
+.assign-head{font-size:12px;font-weight:800;color:#B8541F;margin-bottom:6px}
+.assign-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid rgba(184,84,31,.14)}
+.assign-item:first-child{border-top:none}
+.assign-item .info{font-size:12px;line-height:1.5}
+.assign-item .info b{color:var(--ink)}
+.assign-item .due{font-size:10.5px;color:var(--muted)}
+.assign-start-btn{flex:0 0 auto;background:var(--accent-a);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:800;cursor:pointer}
+
+/* form giao bài tập trong dashboard GV */
+.gv-section-title{font-size:13px;font-weight:800;margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
+.gv-form{display:flex;flex-direction:column;gap:8px}
+.gv-form-row{display:flex;gap:8px}
+.gv-form input,.gv-form select{
+  flex:1;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:12.5px;background:var(--bg);
+}
+.gv-form label{font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:2px;display:block}
+.gv-assign-list-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:12px}
+.gv-assign-list-item .info{line-height:1.5}
+.gv-assign-del{flex:0 0 auto;background:var(--danger-soft);color:var(--danger);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer}
 .name-input{
   flex:1;height:40px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 13px;
   font-size:13px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
@@ -298,6 +325,13 @@ canvas#wave{width:100%;height:44px;display:block}
 .result-msg{font-size:13px;line-height:1.5;color:var(--ink-soft)}
 .result-detail{font-size:12.3px;color:var(--muted);margin-top:8px;line-height:1.55}
 .transcript-note{font-size:11.5px;color:var(--muted);margin-top:9px;font-style:italic}
+.ai-coach-btn{width:100%;margin-top:12px;font-size:12.5px;padding:10px}
+.ai-coach-box{
+  display:none;margin-top:10px;background:var(--accent-soft);border-radius:14px;padding:11px 13px;
+  font-size:12.5px;line-height:1.55;color:#7A3B1E;
+}
+.ai-coach-box.show{display:block}
+.ai-coach-box.err{background:var(--danger-soft);color:#8E2A32}
 
 /* nav */
 .nav{display:flex;justify-content:space-between;margin-top:18px}
@@ -355,6 +389,7 @@ canvas#wave{width:100%;height:44px;display:block}
 
   <div class="id-row">
     <input id="studentIdInput" class="id-input" type="text" placeholder="MSSV / Mã GV" autocomplete="off" oninput="onIdInput()">
+    <input id="classInput" class="id-input class-input" type="text" placeholder="Lớp" autocomplete="off" oninput="onClassInput()">
     <button class="verify-btn" id="verifyBtn" onclick="verifyStudentId()">Xác nhận</button>
   </div>
   <div class="name-row">
@@ -362,6 +397,11 @@ canvas#wave{width:100%;height:44px;display:block}
     <span class="log-status" id="logStatus">●</span>
   </div>
   <div class="verify-note" id="verifyNote">Chưa xác nhận — có thể tự gõ tên bên dưới, hoặc nhập MSSV/Mã GV rồi bấm Xác nhận để đăng nhập chính xác hơn.</div>
+</div>
+
+<div class="assign-card" id="assignCard">
+  <div class="assign-head">📌 Bài tập được giao</div>
+  <div id="assignBody"></div>
 </div>
 
 <div class="content">
@@ -460,6 +500,36 @@ canvas#wave{width:100%;height:44px;display:block}
       <div id="gvList"></div>
       <button class="btn btn-ghost gv-export-btn" onclick="exportGvCsv()">⬇ Xuất CSV</button>
       <button class="btn btn-ghost gv-export-btn" onclick="refreshGvData()">↻ Tải lại dữ liệu</button>
+
+      <div class="gv-section-title">📌 Giao bài tập cho lớp</div>
+      <div class="gv-form">
+        <div class="gv-form-row">
+          <div style="flex:1"><label>Lớp</label><input id="gvAssignClass" placeholder="VD: CK21A" autocomplete="off"></div>
+          <div style="flex:1"><label>Cấp độ</label>
+            <select id="gvAssignLevel">
+              <option value="A1">A1</option>
+              <option value="A2" selected>A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+              <option value="C2">C2</option>
+              <option value="NN">Ngành nghề</option>
+            </select>
+          </div>
+        </div>
+        <div class="gv-form-row">
+          <div style="flex:1"><label>Chủ đề (để trống = tất cả)</label><input id="gvAssignCategory" placeholder="VD: Công việc" autocomplete="off"></div>
+          <div style="flex:0 0 76px"><label>Số câu</label><input id="gvAssignCount" type="number" value="8" min="1" max="50"></div>
+        </div>
+        <div class="gv-form-row">
+          <div style="flex:1"><label>Bắt đầu</label><input id="gvAssignStart" type="date"></div>
+          <div style="flex:1"><label>Kết thúc</label><input id="gvAssignEnd" type="date"></div>
+        </div>
+        <div><label>Ghi chú (tuỳ chọn)</label><input id="gvAssignNote" placeholder="VD: Luyện trước kiểm tra giữa kỳ" autocomplete="off"></div>
+        <div class="gv-error" id="gvAssignError"></div>
+        <button class="btn btn-teal" onclick="createAssignment()">Giao bài</button>
+      </div>
+      <div id="gvAssignList"></div>
     </div>
   </div>
 </div>
@@ -472,6 +542,7 @@ let userName = "";
 let studentId = "";
 let verifiedId = null;   // khác null khi MSSV đã được xác nhận đúng
 let verifiedClass = "";
+let manualClass = "";
 
 function onIdInput(){
   studentId = document.getElementById('studentIdInput').value.trim();
@@ -479,8 +550,18 @@ function onIdInput(){
     // người dùng sửa lại mã sau khi đã xác nhận -> huỷ trạng thái xác nhận cũ
     verifiedId = null; verifiedClass = "";
     document.getElementById('userName').disabled = false;
+    document.getElementById('classInput').disabled = false;
     setVerifyNote('Mã đã thay đổi — bấm Xác nhận lại.', '');
   }
+}
+
+function currentClass(){
+  return (verifiedClass || manualClass || '').trim().toUpperCase();
+}
+
+function onClassInput(){
+  manualClass = document.getElementById('classInput').value.trim();
+  loadAssignments();
 }
 
 function setVerifyNote(text, cls){
@@ -509,8 +590,11 @@ function verifyStudentId(){
         const nameInput = document.getElementById('userName');
         nameInput.value = data.name;
         nameInput.disabled = true;
+        const classInputEl = document.getElementById('classInput');
+        if(verifiedClass){ classInputEl.value = verifiedClass; classInputEl.disabled = true; }
         setVerifyNote('Đã xác nhận: ' + data.name + (verifiedClass ? ' — Lớp ' + verifiedClass : ''), 'ok');
         renderStreakBadge();
+        loadAssignments();
       } else if(data && data.status==='no_roster'){
         setVerifyNote('Trường chưa cấu hình danh sách MSSV — cứ gõ tên thủ công bên dưới.', 'err');
       } else {
@@ -535,6 +619,59 @@ function setLogStatus(state, title){
   const el = document.getElementById('logStatus');
   el.className = 'log-status ' + state;
   el.title = title || '';
+}
+
+/* ---------- Bài tập được giao theo lớp (phía SV) ---------- */
+let currentAssignments = [];
+
+function loadAssignments(){
+  const cls = currentClass();
+  const card = document.getElementById('assignCard');
+  if(!cls || !logIsConfigured()){ card.classList.remove('show'); currentAssignments=[]; return; }
+  fetch(LOG_ENDPOINT + '?action=assignments&class=' + encodeURIComponent(cls))
+    .then(res=>res.json())
+    .then(data=>{
+      currentAssignments = (data && data.status==='ok' && data.assignments) ? data.assignments : [];
+      renderAssignCard();
+    })
+    .catch(()=>{ currentAssignments=[]; renderAssignCard(); });
+}
+
+function renderAssignCard(){
+  const card = document.getElementById('assignCard');
+  const body = document.getElementById('assignBody');
+  if(!currentAssignments.length){ card.classList.remove('show'); body.innerHTML=''; return; }
+  card.classList.add('show');
+  body.innerHTML = currentAssignments.map((a,i)=>{
+    const endLabel = a.endDate ? a.endDate.split('-').reverse().join('/') : '';
+    return `<div class="assign-item">
+      <div class="info"><b>${LEVEL_LABELS[a.level]||a.level}</b> · ${a.category==='ALL'?'Tất cả chủ đề':a.category} · ${a.count} câu
+        ${a.note? '<br><span class="due">'+a.note+'</span>':''}
+        <div class="due">Hạn: ${endLabel}</div>
+      </div>
+      <button class="assign-start-btn" onclick="startAssignment(${i})">Bắt đầu</button>
+    </div>`;
+  }).join('');
+}
+
+function startAssignment(i){
+  const a = currentAssignments[i];
+  if(!a || !SETS[a.level]) return;
+  level = a.level;
+  selectedTopic = (a.category && a.category!=='ALL') ? a.category : 'ALL';
+  let pool = selectedTopic==='ALL' ? SETS[level] : SETS[level].filter(s=>s.cat===selectedTopic);
+  if(!pool.length){ pool = SETS[level]; selectedTopic='ALL'; }
+  sentences = pool.slice(0, a.count || 8);
+  current = 0;
+  scores = new Array(sentences.length).fill(null);
+  transcripts = new Array(sentences.length).fill("");
+  confidences = new Array(sentences.length).fill(null);
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.toggle('active', b.dataset.level===level));
+  buildTopics();
+  document.getElementById('stage').style.display='block';
+  document.getElementById('summary').classList.remove('show');
+  renderCard();
+  document.getElementById('stage').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function sendLog(payload){
@@ -626,6 +763,7 @@ function submitGvToken(){
   document.getElementById('gvLoginView').style.display='none';
   document.getElementById('gvDataView').style.display='block';
   refreshGvData();
+  loadGvAssignments();
 }
 
 function refreshGvData(){
@@ -696,6 +834,74 @@ function exportGvCsv(){
   a.href = url; a.download = 'voicelab-bao-cao-'+todayStr()+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/* ---------- GV: giao bài tập theo lớp ---------- */
+function createAssignment(){
+  const errEl = document.getElementById('gvAssignError');
+  errEl.classList.remove('show');
+  const className = document.getElementById('gvAssignClass').value.trim();
+  const lvl = document.getElementById('gvAssignLevel').value;
+  const category = document.getElementById('gvAssignCategory').value.trim() || 'ALL';
+  const count = parseInt(document.getElementById('gvAssignCount').value, 10) || 8;
+  const startDate = document.getElementById('gvAssignStart').value;
+  const endDate = document.getElementById('gvAssignEnd').value;
+  const note = document.getElementById('gvAssignNote').value.trim();
+
+  if(!className){ errEl.textContent='Nhập tên lớp trước.'; errEl.classList.add('show'); return; }
+  if(!startDate || !endDate){ errEl.textContent='Chọn ngày bắt đầu và kết thúc.'; errEl.classList.add('show'); return; }
+  if(endDate < startDate){ errEl.textContent='Ngày kết thúc phải sau ngày bắt đầu.'; errEl.classList.add('show'); return; }
+
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'create_assignment', token:gvToken, className, level:lvl, category, count, startDate, endDate, note})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      document.getElementById('gvAssignClass').value='';
+      document.getElementById('gvAssignCategory').value='';
+      document.getElementById('gvAssignNote').value='';
+      loadGvAssignments();
+    } else {
+      errEl.textContent = (data && data.message) || 'Không giao được bài.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{ errEl.textContent='Không kết nối được để giao bài.'; errEl.classList.add('show'); });
+}
+
+function loadGvAssignments(){
+  const list = document.getElementById('gvAssignList');
+  if(!logIsConfigured()){ list.innerHTML=''; return; }
+  fetch(LOG_ENDPOINT + '?action=assignments_all&token=' + encodeURIComponent(gvToken))
+    .then(res=>res.json())
+    .then(data=>{
+      const items = (data && data.status==='ok') ? data.assignments : [];
+      if(!items.length){ list.innerHTML = '<div class="gv-empty">Chưa giao bài nào.</div>'; return; }
+      list.innerHTML = items.map(a=>{
+        const range = (a.startDate.split('-').reverse().join('/')) + ' → ' + (a.endDate.split('-').reverse().join('/'));
+        return `<div class="gv-assign-list-item">
+          <div class="info"><b>${a.className}</b> · ${LEVEL_LABELS[a.level]||a.level} · ${a.category==='ALL'?'Tất cả':a.category} · ${a.count} câu<br>
+          <span style="color:var(--muted);font-size:10.5px">${range}${a.note?' · '+a.note:''}</span></div>
+          <button class="gv-assign-del" onclick="deleteAssignmentGv('${a.id}')">Xoá</button>
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được danh sách bài tập.</div>'; });
+}
+
+function deleteAssignmentGv(id){
+  if(!confirm('Xoá bài tập này?')) return;
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'delete_assignment', token:gvToken, id})
+  })
+  .then(res=>res.json())
+  .then(()=> loadGvAssignments())
+  .catch(()=> alert('Không xoá được, thử lại sau.'));
 }
 
 /* ---------- content ---------- */
@@ -1339,6 +1545,7 @@ let sentences = SETS[level];
 let current = 0;
 let scores = new Array(sentences.length).fill(null);
 let transcripts = new Array(sentences.length).fill("");
+let confidences = new Array(sentences.length).fill(null);
 
 /* voice gender preference for TTS sample */
 let voicePref = "female";
@@ -1397,6 +1604,7 @@ function applyTopicFilter(){
   current = 0;
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
+  confidences = new Array(sentences.length).fill(null);
 }
 
 /* recognition mode detection */
@@ -1408,7 +1616,7 @@ let micAllowed = null; // becomes true/false after first attempt
 let mediaRecorder=null, mediaStream=null, audioChunks=[], recordedBlobUrl=null;
 let isRecording=false, recTimerInterval=null, recSeconds=0;
 let audioCtx=null, analyser=null, sourceNode=null, rafId=null;
-let recognizer=null, liveTranscript="";
+let recognizer=null, liveTranscript="", liveConfidence=null;
 let audioEl=null, isPlaying=false;
 
 function init(){
@@ -1434,6 +1642,7 @@ function switchLevel(lv){
   current = 0;
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
+  confidences = new Array(sentences.length).fill(null);
   document.querySelectorAll('.level-btn').forEach(b=>b.classList.toggle('active', b.dataset.level===lv));
   document.getElementById('stage').style.display='block';
   document.getElementById('summary').classList.remove('show');
@@ -1544,6 +1753,7 @@ async function toggleRecording(){
   startWaveform(mediaStream);
   audioChunks = [];
   liveTranscript = "";
+  liveConfidence = null;
   try{
     mediaRecorder = new MediaRecorder(mediaStream);
   }catch(e){
@@ -1591,8 +1801,15 @@ async function toggleRecording(){
       recognizer.interimResults=true;
       recognizer.onresult = (ev)=>{
         let text='';
-        for(let i=0;i<ev.results.length;i++){ text += ev.results[i][0].transcript + ' '; }
+        let lastConf = null;
+        for(let i=0;i<ev.results.length;i++){
+          text += ev.results[i][0].transcript + ' ';
+          if(ev.results[i].isFinal && typeof ev.results[i][0].confidence === 'number' && ev.results[i][0].confidence>0){
+            lastConf = ev.results[i][0].confidence;
+          }
+        }
         liveTranscript = text;
+        if(lastConf!=null) liveConfidence = lastConf;
       };
       recognizer.onerror = ()=>{};
       recognizer.start();
@@ -1707,6 +1924,11 @@ function paintResult(r, typed){
     `<span class="word-chip ${w.ok?'word-ok':'word-bad'}">${w.word}</span>`
   ).join('');
 
+  const conf = confidences[current];
+  const confHtml = (conf!=null)
+    ? `<div class="result-detail" style="margin-top:6px">🎙️ Độ rõ giọng nói (do máy nhận diện): <b>${Math.round(conf*100)}%</b></div>`
+    : '';
+
   const result = document.getElementById('result');
   result.className='result show';
   result.innerHTML = `
@@ -1720,7 +1942,10 @@ function paintResult(r, typed){
     <div class="result-msg">${msg}</div>
     <div class="result-detail">${detail}</div>
     <div class="result-detail" style="margin-top:8px">${wordChips}</div>
+    ${confHtml}
     <div class="transcript-note">${recognitionSupported && micAllowed ? 'Nhận diện tự động:' : 'Bạn đã nhập:'} “${(typed||'').replace(/</g,'&lt;')}”</div>
+    <button class="btn btn-ghost ai-coach-btn" id="aiCoachBtn" onclick="askAiCoach()">🎓 Nhận xét từ AI Coach</button>
+    <div class="ai-coach-box" id="aiCoachBox"></div>
   `;
   buildRail();
 }
@@ -1731,6 +1956,7 @@ function handleScore(){
   transcripts[current] = typed;
   const r = scoreWords(expected, typed);
   scores[current] = r.score;
+  confidences[current] = (recognitionSupported && micAllowed) ? liveConfidence : null;
   paintResult(r, typed);
 
   sendLog({
@@ -1745,7 +1971,52 @@ function handleScore(){
     score: r.score,
     matched: r.matched,
     total: r.total,
+    confidence: confidences[current],
     mode: (recognitionSupported && micAllowed) ? 'auto-speech' : 'typed-fallback'
+  });
+}
+
+function askAiCoach(){
+  const btn = document.getElementById('aiCoachBtn');
+  const box = document.getElementById('aiCoachBox');
+  if(!logIsConfigured()){
+    box.className='ai-coach-box show err';
+    box.textContent = 'Chưa cấu hình Apps Script (LOG_ENDPOINT) nên chưa gọi được AI Coach.';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Đang hỏi AI Coach...';
+  box.className='ai-coach-box show';
+  box.textContent = '';
+
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({
+      action:'coach',
+      expected: sentences[current].en,
+      transcript: transcripts[current] || '',
+      score: scores[current],
+      confidence: confidences[current]
+    })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    btn.disabled = false;
+    btn.textContent = '🎓 Nhận xét từ AI Coach';
+    if(data && data.status==='ok' && data.tip){
+      box.className='ai-coach-box show';
+      box.textContent = data.tip;
+    } else {
+      box.className='ai-coach-box show err';
+      box.textContent = (data && data.message) || 'AI Coach chưa phản hồi được, thử lại sau.';
+    }
+  })
+  .catch(()=>{
+    btn.disabled = false;
+    btn.textContent = '🎓 Nhận xét từ AI Coach';
+    box.className='ai-coach-box show err';
+    box.textContent = 'Không kết nối được AI Coach. Kiểm tra mạng và thử lại.';
   });
 }
 
@@ -1779,6 +2050,7 @@ function restart(){
   current=0;
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
+  confidences = new Array(sentences.length).fill(null);
   document.getElementById('stage').style.display='block';
   document.getElementById('summary').classList.remove('show');
   renderCard();
