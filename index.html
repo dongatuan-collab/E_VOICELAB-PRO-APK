@@ -389,7 +389,7 @@ canvas#wave{width:100%;height:44px;display:block}
 
   <div class="id-row">
     <input id="studentIdInput" class="id-input" type="text" placeholder="MSSV / Mã GV" autocomplete="off" oninput="onIdInput()">
-    <input id="classInput" class="id-input class-input" type="text" placeholder="Lớp" autocomplete="off" oninput="onClassInput()">
+    <input id="classInput" class="id-input class-input" type="text" placeholder="Lớp" autocomplete="off" oninput="onClassInput()" onchange="onClassInput()">
     <button class="verify-btn" id="verifyBtn" onclick="verifyStudentId()">Xác nhận</button>
   </div>
   <div class="name-row">
@@ -537,7 +537,7 @@ canvas#wave{width:100%;height:44px;display:block}
 <script>
 /* ---------- Apps Script logging ---------- */
 // Sau khi deploy Code.gs làm Web App, dán URL /exec vào đây:
-const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbw4hg2GNQ9bbU842iDZ9ZxzmnynN6LXsfPL1DtVSHilsxA31nxgROTZsa1FkqX6orrI/exec";
+const LOG_ENDPOINT = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 let userName = "";
 let studentId = "";
 let verifiedId = null;   // khác null khi MSSV đã được xác nhận đúng
@@ -1626,6 +1626,8 @@ function init(){
   document.getElementById('typedInput').value='';
   setLogStatus(logIsConfigured() ? 'off' : 'off', logIsConfigured() ? 'Sẵn sàng gửi log' : 'Chưa cấu hình Apps Script logging (xem LOG_ENDPOINT trong code)');
   renderStreakBadge();
+  manualClass = document.getElementById('classInput').value.trim();
+  loadAssignments();
   const ua = navigator.userAgent || '';
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && 'ontouchend' in document);
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
