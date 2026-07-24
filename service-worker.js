@@ -7,7 +7,7 @@
  * đã cài PWA sẽ tiếp tục dùng bản CŨ đã lưu trong cache, không thấy được
  * bản cập nhật cho tới khi họ tự gỡ cài đặt.
  */
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = 'voicelab-cache-' + CACHE_VERSION;
 
 // Đường dẫn app shell cần cache để chạy được khi mất mạng.

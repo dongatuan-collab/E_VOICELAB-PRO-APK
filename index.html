@@ -120,6 +120,15 @@ body{
 .gv-assign-list-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:12px}
 .gv-assign-list-item .info{line-height:1.5}
 .gv-assign-del{flex:0 0 auto;background:var(--danger-soft);color:var(--danger);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer}
+
+/* bài làm chi tiết + audio */
+.gv-sub-item{border-top:1px solid var(--line);padding:10px 0;font-size:12px}
+.gv-sub-item .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:10.5px;margin-bottom:4px}
+.gv-sub-item .sent{font-weight:700;color:var(--ink);margin-bottom:2px}
+.gv-sub-item .trans{color:var(--ink-soft);font-style:italic;margin-bottom:6px}
+.gv-sub-item .score-tag{font-weight:800}
+.gv-sub-item audio{width:100%;height:32px;margin-top:4px}
+.gv-sub-noaudio{font-size:10.5px;color:var(--muted);font-style:italic}
 .name-input{
   flex:1;height:40px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 13px;
   font-size:13px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
@@ -485,10 +494,18 @@ canvas#wave{width:100%;height:44px;display:block}
     </div>
 
     <div id="gvLoginView" class="gv-login">
-      <p style="font-size:12.5px;color:var(--muted);margin:0 0 4px">Nhập mã truy cập giảng viên để xem tổng hợp điểm sinh viên (dữ liệu lấy từ Google Sheet đã cấu hình).</p>
-      <input id="gvTokenInput" type="password" placeholder="Mã truy cập giảng viên" autocomplete="off">
-      <div class="gv-error" id="gvError">Mã truy cập không đúng, hoặc chưa cấu hình Apps Script.</div>
-      <button class="btn btn-teal" onclick="submitGvToken()">Đăng nhập</button>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 4px">Nhập mật khẩu giảng viên để xem tổng hợp điểm sinh viên (dữ liệu lấy từ Google Sheet đã cấu hình).</p>
+      <input id="gvPasswordInput" type="password" placeholder="Mật khẩu giảng viên" autocomplete="off">
+      <div class="gv-error" id="gvError"></div>
+      <button class="btn btn-teal" onclick="submitGvLogin()">Đăng nhập</button>
+    </div>
+
+    <div id="gvChangePwView" class="gv-login" style="display:none">
+      <p style="font-size:12.5px;color:#B8541F;font-weight:700;margin:0 0 4px">⚠️ Đang dùng mật khẩu mặc định — bắt buộc đổi mật khẩu trước khi tiếp tục.</p>
+      <input id="gvNewPw1" type="password" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" autocomplete="off">
+      <input id="gvNewPw2" type="password" placeholder="Nhập lại mật khẩu mới" autocomplete="off">
+      <div class="gv-error" id="gvChangePwError"></div>
+      <button class="btn btn-teal" onclick="submitChangePassword()">Đổi mật khẩu</button>
     </div>
 
     <div id="gvDataView" style="display:none">
@@ -500,6 +517,28 @@ canvas#wave{width:100%;height:44px;display:block}
       <div id="gvList"></div>
       <button class="btn btn-ghost gv-export-btn" onclick="exportGvCsv()">⬇ Xuất CSV</button>
       <button class="btn btn-ghost gv-export-btn" onclick="refreshGvData()">↻ Tải lại dữ liệu</button>
+
+      <div class="gv-section-title">🎧 Bài làm chi tiết (nghe lại ghi âm)</div>
+      <div class="gv-form">
+        <div class="gv-form-row">
+          <div style="flex:1"><label>Lọc theo Lớp</label><input id="gvSubClass" placeholder="Để trống = tất cả"></div>
+          <div style="flex:1"><label>Lọc theo MSSV</label><input id="gvSubStudent" placeholder="Để trống = tất cả"></div>
+        </div>
+        <button class="btn btn-ghost" onclick="loadSubmissions()">Xem bài làm</button>
+      </div>
+      <div id="gvSubmissionList"></div>
+
+      <div class="gv-section-title">🧑‍🎓 Quản lý danh sách lớp</div>
+      <div class="gv-form">
+        <div class="gv-form-row">
+          <div style="flex:1"><label>MSSV</label><input id="gvStuId" placeholder="VD: 2023CK01" autocomplete="off"></div>
+          <div style="flex:1"><label>Họ tên</label><input id="gvStuName" placeholder="Nguyễn Văn A" autocomplete="off"></div>
+        </div>
+        <div><label>Lớp</label><input id="gvStuClass" placeholder="VD: CK21A" autocomplete="off"></div>
+        <div class="gv-error" id="gvStuError"></div>
+        <button class="btn btn-teal" onclick="addStudent()">Thêm / Cập nhật SV</button>
+      </div>
+      <div id="gvStuList"></div>
 
       <div class="gv-section-title">📌 Giao bài tập cho lớp</div>
       <div class="gv-form">
@@ -530,6 +569,9 @@ canvas#wave{width:100%;height:44px;display:block}
         <button class="btn btn-teal" onclick="createAssignment()">Giao bài</button>
       </div>
       <div id="gvAssignList"></div>
+
+      <div class="gv-section-title">🔒 Bảo mật</div>
+      <button class="btn btn-ghost gv-export-btn" onclick="showChangePasswordFromDashboard()">Đổi mật khẩu giảng viên</button>
     </div>
   </div>
 </div>
@@ -666,6 +708,7 @@ function startAssignment(i){
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
   confidences = new Array(sentences.length).fill(null);
+  recordedBlobs = new Array(sentences.length).fill(null);
   document.querySelectorAll('.level-btn').forEach(b=>b.classList.toggle('active', b.dataset.level===level));
   buildTopics();
   document.getElementById('stage').style.display='block';
@@ -737,10 +780,6 @@ function recordSession(avgScore, count){
 }
 
 /* ---------- bảng điều khiển giảng viên ---------- */
-// Mã truy cập đơn giản phía client. Đây CHỈ là lớp chặn nhẹ để tránh SV bấm nhầm,
-// không phải bảo mật thật sự — dữ liệu thật được bảo vệ bằng "token" kiểm tra trong Code.gs (doGet).
-// Đổi mã này và mã TOKEN tương ứng trong Code.gs trước khi dùng thật.
-const GV_ACCESS_CODE = "bctech2026";
 let gvToken = "";
 let gvLastRows = [];
 
@@ -750,20 +789,104 @@ function openDashboard(){
 function closeDashboard(){
   document.getElementById('gvModal').classList.remove('show');
 }
-function submitGvToken(){
-  const val = document.getElementById('gvTokenInput').value.trim();
+
+function submitGvLogin(){
+  const val = document.getElementById('gvPasswordInput').value;
   const errEl = document.getElementById('gvError');
-  if(val !== GV_ACCESS_CODE){
-    errEl.textContent = 'Mã truy cập không đúng.';
+  errEl.classList.remove('show');
+  if(!logIsConfigured()){
+    errEl.textContent = 'Chưa cấu hình Apps Script (LOG_ENDPOINT) nên chưa đăng nhập được.';
     errEl.classList.add('show');
     return;
   }
+  if(!val){
+    errEl.textContent = 'Nhập mật khẩu.';
+    errEl.classList.add('show');
+    return;
+  }
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'gv_login', password: val})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      gvToken = data.token;
+      document.getElementById('gvPasswordInput').value = '';
+      if(data.mustChangePassword){
+        document.getElementById('gvLoginView').style.display='none';
+        document.getElementById('gvChangePwView').style.display='block';
+      } else {
+        enterGvDashboard();
+      }
+    } else {
+      errEl.textContent = (data && data.message) || 'Sai mật khẩu.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{
+    errEl.textContent = 'Không kết nối được để đăng nhập, thử lại sau.';
+    errEl.classList.add('show');
+  });
+}
+
+let gvChangingFromDashboard = false;
+
+function showChangePasswordFromDashboard(){
+  gvChangingFromDashboard = true;
+  document.getElementById('gvDataView').style.display='none';
+  document.getElementById('gvChangePwView').style.display='block';
+  document.getElementById('gvNewPw1').value='';
+  document.getElementById('gvNewPw2').value='';
+  document.getElementById('gvChangePwError').classList.remove('show');
+}
+
+function submitChangePassword(){
+  const pw1 = document.getElementById('gvNewPw1').value;
+  const pw2 = document.getElementById('gvNewPw2').value;
+  const errEl = document.getElementById('gvChangePwError');
   errEl.classList.remove('show');
-  gvToken = val;
+  if(pw1.length < 6){ errEl.textContent='Mật khẩu mới phải từ 6 ký tự trở lên.'; errEl.classList.add('show'); return; }
+  if(pw1 !== pw2){ errEl.textContent='Hai lần nhập mật khẩu chưa khớp.'; errEl.classList.add('show'); return; }
+
+  // Cần mật khẩu hiện tại để đổi — nếu đang ở luồng bắt buộc đổi lần đầu thì dùng mật khẩu mặc định,
+  // nếu GV chủ động vào đổi từ trong dashboard thì hỏi lại mật khẩu hiện tại cho chắc.
+  let oldPw = "bctech2026";
+  if(gvChangingFromDashboard){
+    oldPw = prompt('Nhập mật khẩu hiện tại để xác nhận:');
+    if(oldPw===null) return;
+  }
+
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'gv_change_password', token:gvToken, oldPassword:oldPw, newPassword:pw1})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      alert('Đã đổi mật khẩu thành công. Nhớ mật khẩu mới cho lần đăng nhập sau.');
+      gvChangingFromDashboard = false;
+      enterGvDashboard();
+    } else {
+      errEl.textContent = (data && data.message) || 'Không đổi được mật khẩu.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{
+    errEl.textContent = 'Không kết nối được, thử lại sau.';
+    errEl.classList.add('show');
+  });
+}
+
+function enterGvDashboard(){
   document.getElementById('gvLoginView').style.display='none';
+  document.getElementById('gvChangePwView').style.display='none';
   document.getElementById('gvDataView').style.display='block';
   refreshGvData();
   loadGvAssignments();
+  loadStudents();
 }
 
 function refreshGvData(){
@@ -902,6 +1025,100 @@ function deleteAssignmentGv(id){
   .then(res=>res.json())
   .then(()=> loadGvAssignments())
   .catch(()=> alert('Không xoá được, thử lại sau.'));
+}
+
+/* ---------- GV: quản lý danh sách lớp (DanhSach) ---------- */
+function addStudent(){
+  const errEl = document.getElementById('gvStuError');
+  errEl.classList.remove('show');
+  const mssv = document.getElementById('gvStuId').value.trim();
+  const name = document.getElementById('gvStuName').value.trim();
+  const className = document.getElementById('gvStuClass').value.trim();
+  if(!mssv || !name || !className){
+    errEl.textContent = 'Điền đủ MSSV, họ tên và lớp.';
+    errEl.classList.add('show');
+    return;
+  }
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'add_student', token:gvToken, mssv, name, className})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      document.getElementById('gvStuId').value='';
+      document.getElementById('gvStuName').value='';
+      document.getElementById('gvStuClass').value='';
+      loadStudents();
+    } else {
+      errEl.textContent = (data && data.message) || 'Không thêm được.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{ errEl.textContent='Không kết nối được, thử lại sau.'; errEl.classList.add('show'); });
+}
+
+function loadStudents(){
+  const list = document.getElementById('gvStuList');
+  if(!logIsConfigured()){ list.innerHTML=''; return; }
+  fetch(LOG_ENDPOINT + '?action=students&token=' + encodeURIComponent(gvToken))
+    .then(res=>res.json())
+    .then(data=>{
+      const students = (data && data.status==='ok') ? data.students : [];
+      if(!students.length){ list.innerHTML = '<div class="gv-empty">Chưa có sinh viên nào trong danh sách.</div>'; return; }
+      list.innerHTML = students
+        .sort((a,b)=> (a.className||'').localeCompare(b.className||'') || (a.name||'').localeCompare(b.name||''))
+        .map(s=>`<div class="gv-assign-list-item">
+          <div class="info"><b>${s.name}</b> · ${s.mssv}<br><span style="color:var(--muted);font-size:10.5px">Lớp ${s.className||'—'}</span></div>
+          <button class="gv-assign-del" onclick="deleteStudentGv('${s.mssv}')">Xoá</button>
+        </div>`).join('');
+    })
+    .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được danh sách.</div>'; });
+}
+
+function deleteStudentGv(mssv){
+  if(!confirm('Xoá sinh viên MSSV '+mssv+' khỏi danh sách?')) return;
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'delete_student', token:gvToken, mssv})
+  })
+  .then(res=>res.json())
+  .then(()=> loadStudents())
+  .catch(()=> alert('Không xoá được, thử lại sau.'));
+}
+
+/* ---------- GV: xem bài làm chi tiết + nghe lại ghi âm ---------- */
+function loadSubmissions(){
+  const list = document.getElementById('gvSubmissionList');
+  if(!logIsConfigured()){ list.innerHTML=''; return; }
+  const cls = document.getElementById('gvSubClass').value.trim();
+  const sid = document.getElementById('gvSubStudent').value.trim();
+  list.innerHTML = '<div class="gv-empty">Đang tải...</div>';
+  let url = LOG_ENDPOINT + '?action=submissions&token=' + encodeURIComponent(gvToken) + '&limit=50';
+  if(cls) url += '&class=' + encodeURIComponent(cls);
+  if(sid) url += '&studentId=' + encodeURIComponent(sid);
+  fetch(url)
+    .then(res=>res.json())
+    .then(data=>{
+      const rows = (data && data.status==='ok') ? data.rows : [];
+      if(!rows.length){ list.innerHTML = '<div class="gv-empty">Không có bài làm nào khớp bộ lọc.</div>'; return; }
+      list.innerHTML = rows.map(r=>{
+        const scoreColor = r.score>=80 ? '#0B5F60' : r.score>=55 ? '#7A5A00' : '#8E2A32';
+        const audioHtml = r.audioUrl
+          ? `<audio controls preload="none" src="${r.audioUrl}"></audio>`
+          : `<div class="gv-sub-noaudio">${r.mode==='typed-fallback' ? 'SV gõ tay, không có ghi âm' : 'Không có file ghi âm'}</div>`;
+        return `<div class="gv-sub-item">
+          <div class="meta"><span>${r.user||'Ẩn danh'}${r.studentId?' · '+r.studentId:''}${r.className?' · Lớp '+r.className:''}</span><span>${r.time||''}</span></div>
+          <div class="sent">${r.sentence||''}</div>
+          <div class="trans">"${r.transcript||''}"</div>
+          <div><span class="score-tag" style="color:${scoreColor}">${r.score!=null?r.score+'%':'—'}</span>${r.confidence!=null?' · độ rõ '+r.confidence+'%':''}</div>
+          ${audioHtml}
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được bài làm.</div>'; });
 }
 
 /* ---------- content ---------- */
@@ -1546,6 +1763,7 @@ let current = 0;
 let scores = new Array(sentences.length).fill(null);
 let transcripts = new Array(sentences.length).fill("");
 let confidences = new Array(sentences.length).fill(null);
+let recordedBlobs = new Array(sentences.length).fill(null);
 
 /* voice gender preference for TTS sample */
 let voicePref = "female";
@@ -1605,6 +1823,7 @@ function applyTopicFilter(){
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
   confidences = new Array(sentences.length).fill(null);
+  recordedBlobs = new Array(sentences.length).fill(null);
 }
 
 /* recognition mode detection */
@@ -1645,6 +1864,7 @@ function switchLevel(lv){
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
   confidences = new Array(sentences.length).fill(null);
+  recordedBlobs = new Array(sentences.length).fill(null);
   document.querySelectorAll('.level-btn').forEach(b=>b.classList.toggle('active', b.dataset.level===lv));
   document.getElementById('stage').style.display='block';
   document.getElementById('summary').classList.remove('show');
@@ -1767,6 +1987,7 @@ async function toggleRecording(){
   mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) audioChunks.push(e.data); };
   mediaRecorder.onstop = ()=>{
     const blob = new Blob(audioChunks, {type:'audio/webm'});
+    recordedBlobs[current] = blob;
     if(recordedBlobUrl) URL.revokeObjectURL(recordedBlobUrl);
     recordedBlobUrl = URL.createObjectURL(blob);
     document.getElementById('playback').classList.add('show');
@@ -1961,7 +2182,7 @@ function handleScore(){
   confidences[current] = (recognitionSupported && micAllowed) ? liveConfidence : null;
   paintResult(r, typed);
 
-  sendLog({
+  const basePayload = {
     timestamp: Date.now(),
     user: userName,
     studentId: verifiedId || '',
@@ -1975,7 +2196,21 @@ function handleScore(){
     total: r.total,
     confidence: confidences[current],
     mode: (recognitionSupported && micAllowed) ? 'auto-speech' : 'typed-fallback'
-  });
+  };
+
+  const blob = recordedBlobs[current];
+  if(blob && blob.size > 0){
+    const reader = new FileReader();
+    reader.onloadend = ()=>{
+      // reader.result dạng "data:audio/webm;base64,XXXX" -> chỉ lấy phần base64
+      const base64 = (reader.result || '').toString().split(',')[1] || '';
+      sendLog(Object.assign({}, basePayload, {audio: base64}));
+    };
+    reader.onerror = ()=> sendLog(basePayload); // ghi âm lỗi thì vẫn gửi điểm bình thường, chỉ thiếu audio
+    reader.readAsDataURL(blob);
+  } else {
+    sendLog(basePayload);
+  }
 }
 
 function askAiCoach(){
@@ -2053,6 +2288,7 @@ function restart(){
   scores = new Array(sentences.length).fill(null);
   transcripts = new Array(sentences.length).fill("");
   confidences = new Array(sentences.length).fill(null);
+  recordedBlobs = new Array(sentences.length).fill(null);
   document.getElementById('stage').style.display='block';
   document.getElementById('summary').classList.remove('show');
   renderCard();
