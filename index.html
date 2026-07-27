@@ -79,17 +79,20 @@ body{
 .level-btn.active{background:#fff;color:var(--hero-a)}
 
 .name-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:16px;z-index:1}
-.id-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:8px;z-index:1}
+.id-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px;margin-top:8px;z-index:1}
 .id-input{
-  flex:0 0 100px;height:36px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 10px;
+  flex:1 1 92px;min-width:80px;height:36px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 10px;
   font-size:12.5px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
 }
-.id-input.class-input{flex:0 0 74px}
+.id-input.class-input{flex:1 1 64px;min-width:60px}
 .id-input::placeholder{color:rgba(255,255,255,.6)}
 .id-input:disabled{opacity:.75}
 .verify-btn{
-  height:36px;padding:0 13px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);
+  flex:1 1 100%;height:36px;padding:0 13px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.18);
   color:#fff;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;
+}
+@media (min-width:420px){
+  .verify-btn{flex:0 0 auto}
 }
 .verify-note{font-size:11px;margin-top:6px;color:rgba(255,255,255,.78);z-index:1;position:relative}
 .verify-note.ok{color:#B9F5E5}
@@ -364,6 +367,26 @@ canvas#wave{width:100%;height:44px;display:block}
 .restart-btn{margin-top:22px;width:100%}
 
 .footer{margin-top:22px;text-align:center;padding:14px 24px 0}
+
+/* nút cài đặt ứng dụng */
+.install-btn{
+  display:none;margin:14px auto 0;background:var(--surface);border:1.5px solid var(--teal);color:var(--teal);
+  font-size:12.5px;font-weight:800;padding:10px 18px;border-radius:999px;cursor:pointer;
+}
+.install-btn.show{display:inline-block}
+
+/* banner báo cập nhật mới */
+.update-banner{
+  display:none;position:fixed;left:12px;right:12px;bottom:14px;z-index:60;
+  background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;
+  align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.update-banner.show{display:flex}
+.update-banner button{
+  flex:0 0 auto;background:var(--accent-a);color:#fff;border:none;border-radius:10px;
+  padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;
+}
 .footer p{margin:0 auto;max-width:38ch;font-size:11.5px;line-height:1.55;color:var(--muted)}
 </style>
 </head>
@@ -481,8 +504,32 @@ canvas#wave{width:100%;height:44px;display:block}
 
   <div class="footer">
     <p><strong>Mẹo:</strong> đọc chậm, rõ từng từ. Nếu điểm thấp, bấm Ghi lại và thử lại — phản xạ tốt hơn sau vài lần luyện.</p>
+    <button class="install-btn" id="installBtn" onclick="clickInstallApp()">📲 Cài đặt ứng dụng lên máy</button>
   </div>
 </div>
+</div>
+
+<!-- Banner báo có bản cập nhật mới -->
+<div class="update-banner" id="updateBanner">
+  <span>🔄 Đã có bản cập nhật mới cho Voice Lab.</span>
+  <button onclick="applyUpdateNow()">Tải lại ngay</button>
+</div>
+
+<!-- Modal hướng dẫn cài đặt trên iOS/Safari (không hỗ trợ cài tự động) -->
+<div class="modal-overlay" id="iosInstallModal" onclick="if(event.target===this) closeIosInstallModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Cài đặt trên iPhone/iPad</div>
+      <button class="modal-close" onclick="closeIosInstallModal()">✕</button>
+    </div>
+    <p style="font-size:13px;line-height:1.7;color:var(--ink-soft)">
+      Safari không hỗ trợ cài đặt tự động, làm theo 3 bước sau:<br><br>
+      1. Bấm biểu tượng <b>Chia sẻ</b> (hình vuông có mũi tên đi lên) ở thanh dưới cùng Safari.<br>
+      2. Cuộn xuống, chọn <b>"Thêm vào MH chính"</b> (Add to Home Screen).<br>
+      3. Bấm <b>Thêm</b> ở góc trên bên phải.<br><br>
+      Sau đó biểu tượng Voice Lab sẽ xuất hiện trên màn hình chính như một app thật.
+    </p>
+  </div>
 </div>
 
 <!-- Lecturer dashboard modal -->
@@ -579,7 +626,7 @@ canvas#wave{width:100%;height:44px;display:block}
 <script>
 /* ---------- Apps Script logging ---------- */
 // Sau khi deploy Code.gs làm Web App, dán URL /exec vào đây:
-const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbw4hg2GNQ9bbU842iDZ9ZxzmnynN6LXsfPL1DtVSHilsxA31nxgROTZsa1FkqX6orrI/exec";
+const LOG_ENDPOINT = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 let userName = "";
 let studentId = "";
 let verifiedId = null;   // khác null khi MSSV đã được xác nhận đúng
@@ -2299,11 +2346,71 @@ window.addEventListener('resize', ()=>{
   if(canvas){ canvas.width = canvas.clientWidth; canvas.height=44; }
 });
 
-/* PWA: đăng ký service worker để app cài được lên máy và chạy offline */
+/* PWA: đăng ký service worker để app cài được lên máy và chạy offline.
+   Đồng thời tự phát hiện khi có bản cập nhật mới và báo cho người dùng bấm tải lại
+   — không cần gỡ cài đặt / cài lại app như trước. */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      reg.update().catch(()=>{}); // chủ động kiểm tra bản mới mỗi khi mở app
+
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            showUpdateBanner();
+          }
+        });
+      });
+    }).catch(()=>{});
+
+    let reloadedOnce = false;
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(reloadedOnce) return;
+      reloadedOnce = true;
+      const banner = document.getElementById('updateBanner');
+      if(banner && banner.classList.contains('show')){
+        window.location.reload();
+      }
+    });
   });
+}
+
+function showUpdateBanner(){
+  const el = document.getElementById('updateBanner');
+  if(el) el.classList.add('show');
+}
+function applyUpdateNow(){
+  window.location.reload();
+}
+
+/* PWA: nút "Cài đặt ứng dụng" chuyên nghiệp thay vì chờ trình duyệt tự gợi ý */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if(btn) btn.classList.add('show');
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('installBtn');
+  if(btn) btn.classList.remove('show');
+});
+function clickInstallApp(){
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') || (navigator.userAgent.includes('Macintosh') && 'ontouchend' in document);
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(()=>{ deferredInstallPrompt=null; });
+  } else if(isIOS){
+    document.getElementById('iosInstallModal').classList.add('show');
+  } else {
+    alert('Trình duyệt này chưa hỗ trợ cài đặt tự động. Mở menu trình duyệt (⋮) và chọn "Cài đặt ứng dụng" hoặc "Thêm vào Màn hình chính".');
+  }
+}
+function closeIosInstallModal(){
+  document.getElementById('iosInstallModal').classList.remove('show');
 }
 
 init();

@@ -3,11 +3,13 @@
  * --------------------------
  * QUAN TRỌNG: mỗi khi cập nhật app.html (thêm tính năng, sửa nội dung...),
  * hãy TĂNG số phiên bản CACHE_VERSION bên dưới lên 1 đơn vị, rồi upload lại
- * file này cùng lúc với file HTML mới. Nếu không tăng version, máy của SV/GV
- * đã cài PWA sẽ tiếp tục dùng bản CŨ đã lưu trong cache, không thấy được
- * bản cập nhật cho tới khi họ tự gỡ cài đặt.
+ * file này cùng lúc với file HTML mới.
+ *
+ * Từ bản này trở đi, app tự phát hiện bản mới và hiện banner "Tải lại ngay" —
+ * SV/GV KHÔNG CẦN gỡ cài đặt / cài lại app nữa, chỉ cần bấm nút trong banner
+ * (hoặc đơn giản là đóng app và mở lại vài lần).
  */
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = 'voicelab-cache-' + CACHE_VERSION;
 
 // Đường dẫn app shell cần cache để chạy được khi mất mạng.
