@@ -587,6 +587,19 @@ canvas#wave{width:100%;height:44px;display:block}
       </div>
       <div id="gvStuList"></div>
 
+      <div style="margin-top:14px">
+        <button class="btn btn-ghost gv-export-btn" onclick="toggleBulkImport()" id="bulkToggleBtn">📋 Nhập nhanh cả lớp (dán danh sách)</button>
+        <div class="gv-form" id="bulkImportBox" style="display:none;margin-top:10px">
+          <div><label>Lớp áp dụng cho cả danh sách dán bên dưới</label><input id="gvBulkClass" placeholder="VD: CD24DCN3" autocomplete="off"></div>
+          <div>
+            <label>Mỗi dòng 1 sinh viên, cách nhau bằng dấu phẩy hoặc Tab: <b>MSSV, Họ và tên</b></label>
+            <textarea id="gvBulkText" rows="6" placeholder="246501076, Trần Công Bằng&#10;246501077, Đỗ Văn Điền&#10;..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
+          </div>
+          <div class="gv-error" id="gvBulkError"></div>
+          <button class="btn btn-teal" onclick="bulkImportStudents()">Nhập tất cả vào danh sách lớp</button>
+        </div>
+      </div>
+
       <div class="gv-section-title">📌 Giao bài tập cho lớp</div>
       <div class="gv-form">
         <div class="gv-form-row">
@@ -1122,6 +1135,44 @@ function loadStudents(){
         </div>`).join('');
     })
     .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được danh sách.</div>'; });
+}
+
+function toggleBulkImport(){
+  const box = document.getElementById('bulkImportBox');
+  box.style.display = (box.style.display==='none') ? 'block' : 'none';
+}
+
+function bulkImportStudents(){
+  const errEl = document.getElementById('gvBulkError');
+  errEl.classList.remove('show');
+  const className = document.getElementById('gvBulkClass').value.trim();
+  const raw = document.getElementById('gvBulkText').value;
+  if(!className){ errEl.textContent='Nhập tên lớp trước.'; errEl.classList.add('show'); return; }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ errEl.textContent='Dán danh sách vào ô bên trên trước.'; errEl.classList.add('show'); return; }
+  const students = lines.map(line=>{
+    const parts = line.split(/\t|,/).map(p=>p.trim()).filter(Boolean);
+    return { mssv: parts[0]||'', name: parts.slice(1).join(' ').trim() };
+  }).filter(s=>s.mssv);
+  if(!students.length){ errEl.textContent='Không đọc được dòng nào hợp lệ (cần có MSSV).'; errEl.classList.add('show'); return; }
+
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'bulk_add_students', token:gvToken, className, students})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      alert('Đã thêm '+data.added+' SV mới, cập nhật '+data.updated+' SV đã có'+(data.skipped?', bỏ qua '+data.skipped+' dòng thiếu MSSV':'')+'.');
+      document.getElementById('gvBulkText').value='';
+      loadStudents();
+    } else {
+      errEl.textContent = (data && data.message) || 'Không nhập được danh sách.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{ errEl.textContent='Không kết nối được, thử lại sau.'; errEl.classList.add('show'); });
 }
 
 function deleteStudentGv(mssv){
