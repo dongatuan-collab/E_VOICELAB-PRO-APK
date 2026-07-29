@@ -639,7 +639,7 @@ canvas#wave{width:100%;height:44px;display:block}
 <script>
 /* ---------- Apps Script logging ---------- */
 // Sau khi deploy Code.gs làm Web App, dán URL /exec vào đây:
-const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbw4hg2GNQ9bbU842iDZ9ZxzmnynN6LXsfPL1DtVSHilsxA31nxgROTZsa1FkqX6orrI/exec";
+const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbze6FqtA7Fem3KPnKwQgwVnRoZ8VInyLhS5XUO5xAMm60hVTtWuNlLJ1I99Hmkqt0mI/exec";
 let userName = "";
 let studentId = "";
 let verifiedId = null;   // khác null khi MSSV đã được xác nhận đúng
@@ -1204,9 +1204,12 @@ function loadSubmissions(){
       if(!rows.length){ list.innerHTML = '<div class="gv-empty">Không có bài làm nào khớp bộ lọc.</div>'; return; }
       list.innerHTML = rows.map(r=>{
         const scoreColor = r.score>=80 ? '#0B5F60' : r.score>=55 ? '#7A5A00' : '#8E2A32';
-        const audioHtml = r.audioUrl
+        const isError = (r.audioUrl||'').toString().startsWith('ERR:');
+        const audioHtml = (r.audioUrl && !isError)
           ? `<audio controls preload="none" src="${r.audioUrl}"></audio>`
-          : `<div class="gv-sub-noaudio">${r.mode==='typed-fallback' ? 'SV gõ tay, không có ghi âm' : 'Không có file ghi âm'}</div>`;
+          : isError
+            ? `<div class="gv-sub-noaudio" style="color:var(--danger)">⚠️ ${r.audioUrl.replace('ERR:','').trim()}</div>`
+            : `<div class="gv-sub-noaudio">${r.mode==='typed-fallback' ? 'SV gõ tay, không có ghi âm' : 'Không có file ghi âm'}</div>`;
         return `<div class="gv-sub-item">
           <div class="meta"><span>${r.user||'Ẩn danh'}${r.studentId?' · '+r.studentId:''}${r.className?' · Lớp '+r.className:''}</span><span>${r.time||''}</span></div>
           <div class="sent">${r.sentence||''}</div>
@@ -2089,7 +2092,7 @@ async function toggleRecording(){
     if(recordedBlobUrl) URL.revokeObjectURL(recordedBlobUrl);
     recordedBlobUrl = URL.createObjectURL(blob);
     document.getElementById('playback').classList.add('show');
-    document.getElementById('playbackLabel').textContent = `Bản ghi của bạn · ${formatTime(recSeconds)}`;
+    document.getElementById('playbackLabel').textContent = `Bản ghi của bạn · ${formatTime(recSeconds)} · ${Math.round(blob.size/1024)} KB`;
     if(recognitionSupported){
       transcripts[current] = liveTranscript.trim();
       document.getElementById('scoreBtn').disabled = false;
