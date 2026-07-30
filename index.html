@@ -132,6 +132,9 @@ body{
 .gv-sub-item .score-tag{font-weight:800}
 .gv-sub-item audio{width:100%;height:32px;margin-top:4px}
 .gv-sub-noaudio{font-size:10.5px;color:var(--muted);font-style:italic}
+.audio-upload-status{font-size:11px;margin-top:6px;color:var(--muted)}
+.audio-upload-status.ok{color:#0B5F60}
+.audio-upload-status.err{color:var(--danger)}
 .name-input{
   flex:1;height:40px;border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:0 13px;
   font-size:13px;background:rgba(255,255,255,.14);color:#fff;outline:none;backdrop-filter:blur(6px);
@@ -474,6 +477,7 @@ canvas#wave{width:100%;height:44px;display:block}
         <span class="playback-label" id="playbackLabel">Bản ghi của bạn</span>
         <button class="redo-btn" onclick="toggleRecording()">Ghi lại</button>
       </div>
+      <div class="audio-upload-status" id="audioUploadStatus"></div>
     </div>
 
     <div class="ios-note" id="iosNote">📱 Trên iPhone/iPad (Safari), trình duyệt chưa hỗ trợ tự nhận diện giọng nói khi ghi âm, nên bài sẽ tự chuyển sang chế độ gõ/nói qua micro bàn phím bên dưới. Đây là giới hạn của Safari, không phải lỗi của app — chấm điểm vẫn chính xác bình thường.</div>
@@ -2300,18 +2304,54 @@ function handleScore(){
   };
 
   const blob = recordedBlobs[current];
+  const statusEl = document.getElementById('audioUploadStatus');
   if(blob && blob.size > 0){
+    if(statusEl){ statusEl.className='audio-upload-status'; statusEl.textContent = '🔄 Đang chuyển ghi âm (' + Math.round(blob.size/1024) + ' KB) để gửi...'; }
     const reader = new FileReader();
     reader.onloadend = ()=>{
       // reader.result dạng "data:audio/webm;base64,XXXX" -> chỉ lấy phần base64
       const base64 = (reader.result || '').toString().split(',')[1] || '';
-      sendLog(Object.assign({}, basePayload, {audio: base64}));
+      if(!base64){
+        if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Không đọc được dữ liệu ghi âm để gửi (base64 rỗng).'; }
+        sendLog(basePayload);
+        return;
+      }
+      if(statusEl){ statusEl.className='audio-upload-status'; statusEl.textContent = '🔄 Đang gửi ghi âm (' + Math.round(base64.length/1024) + ' KB base64) lên máy chủ...'; }
+      sendLogWithAudioStatus(Object.assign({}, basePayload, {audio: base64}), statusEl);
     };
-    reader.onerror = ()=> sendLog(basePayload); // ghi âm lỗi thì vẫn gửi điểm bình thường, chỉ thiếu audio
+    reader.onerror = ()=>{
+      if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Lỗi đọc file ghi âm (FileReader.onerror) — chỉ gửi được điểm, không gửi được ghi âm.'; }
+      sendLog(basePayload);
+    };
     reader.readAsDataURL(blob);
   } else {
+    if(statusEl){ statusEl.className='audio-upload-status'; statusEl.textContent = 'ℹ️ Không có bản ghi âm để gửi (chỉ gửi điểm).'; }
     sendLog(basePayload);
   }
+}
+
+function sendLogWithAudioStatus(payload, statusEl){
+  if(!logIsConfigured()){
+    if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Chưa cấu hình Apps Script, không gửi được.'; }
+    setLogStatus('off','Chưa cấu hình Apps Script logging');
+    return;
+  }
+  fetch(LOG_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  }).then(res=>res.json()).then(data=>{
+    if(data && data.status==='ok'){
+      setLogStatus('ok','Đã lưu log vào Google Sheet');
+      if(statusEl){ statusEl.className='audio-upload-status ok'; statusEl.textContent = '✅ Đã gửi ghi âm lên máy chủ thành công (server đã nhận và trả về status ok).'; }
+    } else {
+      setLogStatus('err','Apps Script báo lỗi: '+(data && data.message || 'unknown'));
+      if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Server báo lỗi: ' + ((data && data.message) || 'không rõ lý do'); }
+    }
+  }).catch((err)=>{
+    setLogStatus('err','Không gửi được log (kiểm tra URL Apps Script / mạng)');
+    if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Không kết nối được tới Apps Script (lỗi mạng/CORS): ' + String(err); }
+  });
 }
 
 function askAiCoach(){
