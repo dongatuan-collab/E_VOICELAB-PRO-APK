@@ -1198,7 +1198,7 @@ function loadSubmissions(){
   const cls = document.getElementById('gvSubClass').value.trim();
   const sid = document.getElementById('gvSubStudent').value.trim();
   list.innerHTML = '<div class="gv-empty">Đang tải...</div>';
-  let url = LOG_ENDPOINT + '?action=submissions&token=' + encodeURIComponent(gvToken) + '&limit=50';
+  let url = LOG_ENDPOINT + '?action=submissions&token=' + encodeURIComponent(gvToken) + '&limit=20';
   if(cls) url += '&class=' + encodeURIComponent(cls);
   if(sid) url += '&studentId=' + encodeURIComponent(sid);
   fetch(url)
@@ -2343,7 +2343,15 @@ function sendLogWithAudioStatus(payload, statusEl){
   }).then(res=>res.json()).then(data=>{
     if(data && data.status==='ok'){
       setLogStatus('ok','Đã lưu log vào Google Sheet');
-      if(statusEl){ statusEl.className='audio-upload-status ok'; statusEl.textContent = '✅ Đã gửi ghi âm lên máy chủ thành công (server đã nhận và trả về status ok).'; }
+      if(statusEl){
+        statusEl.className='audio-upload-status ok';
+        if(data.debug_audioReceived){
+          const urlPart = data.debug_audioUrl ? data.debug_audioUrl : '(rỗng - server không trả về gì)';
+          statusEl.textContent = '✅ Server đã nhận audio (' + Math.round((data.debug_audioLen||0)/1024) + ' KB base64), dòng ' + data.debug_rowWritten + '. Kết quả lưu: ' + urlPart;
+        } else {
+          statusEl.textContent = '⚠️ Server báo KHÔNG nhận được trường audio nào trong request (debug_audioReceived=false) — lỗi nằm ở phía gửi đi từ trình duyệt, dòng ' + data.debug_rowWritten + '.';
+        }
+      }
     } else {
       setLogStatus('err','Apps Script báo lỗi: '+(data && data.message || 'unknown'));
       if(statusEl){ statusEl.className='audio-upload-status err'; statusEl.textContent = '⚠️ Server báo lỗi: ' + ((data && data.message) || 'không rõ lý do'); }
