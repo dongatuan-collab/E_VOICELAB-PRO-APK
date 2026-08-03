@@ -13,6 +13,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Voice Lab">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>
 :root{
@@ -22,8 +25,9 @@
   --bg:#F3F4FA;
   --surface:#FFFFFF;
   --line:#E7E8F3;
-  --hero-a:#1B2A5B;
-  --hero-b:#0E7C77;
+  --hero-a:#16214D;
+  --hero-b:#0B6E68;
+  --hero-c:#0E9C90;
   --accent-a:#FF6B4A;
   --accent-b:#FFB648;
   --accent-soft:#FFEDE3;
@@ -33,13 +37,22 @@
   --amber-soft:#FDF1D6;
   --danger:#E5484D;
   --danger-soft:#FDE4E4;
+  --shadow-sm:0 2px 8px rgba(22,26,46,.06);
+  --shadow-md:0 10px 28px rgba(22,26,46,.10);
+  --shadow-lg:0 20px 48px rgba(22,26,46,.14);
+  --ease:cubic-bezier(.22,1,.36,1);
+  --font-display:'Sora',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-body:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--bg);
+  background:
+    radial-gradient(1100px 520px at 12% -8%, rgba(14,156,144,.10), transparent 60%),
+    radial-gradient(900px 480px at 110% 10%, rgba(255,107,74,.08), transparent 55%),
+    var(--bg);
   color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  font-family:var(--font-body);
   -webkit-font-smoothing:antialiased;
   line-height:1.5;
 }
@@ -48,20 +61,21 @@ body{
 /* hero header */
 .hero{
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%);
-  padding:20px 18px 46px;
-  border-radius:0 0 32px 32px;
+  background:linear-gradient(150deg,var(--hero-a) 0%,var(--hero-b) 62%,var(--hero-c) 130%);
+  padding:22px 18px 48px;
+  border-radius:0 0 36px 36px;
   color:#fff;
+  box-shadow:var(--shadow-lg);
 }
 .hero::before{
-  content:'';position:absolute;width:220px;height:220px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);
-  top:-90px;right:-60px;
+  content:'';position:absolute;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);
+  top:-100px;right:-70px;
 }
 .hero::after{
-  content:'';position:absolute;width:180px;height:180px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,107,74,.28),transparent 70%);
-  bottom:-90px;left:-50px;
+  content:'';position:absolute;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,74,.32),transparent 70%);
+  bottom:-95px;left:-55px;
 }
 .top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:1}
 .brand{display:flex;align-items:center;gap:10px}
@@ -71,12 +85,12 @@ body{
   color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;letter-spacing:-.02em;
   box-shadow:0 6px 14px rgba(255,107,74,.35);
 }
-.brand-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.brand-name{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-.01em}
 .brand-sub{font-size:11.5px;color:rgba(255,255,255,.72)}
 .level-row{position:relative;margin-top:14px;z-index:1}
 .level-switch{display:flex;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:3px;backdrop-filter:blur(6px)}
-.level-btn{flex:1;border:none;background:transparent;font-size:10.5px;font-weight:800;padding:8px 1px;border-radius:999px;color:rgba(255,255,255,.75);cursor:pointer;text-align:center}
-.level-btn.active{background:#fff;color:var(--hero-a)}
+.level-btn{flex:1;border:none;background:transparent;font-size:10.5px;font-weight:800;padding:8px 1px;border-radius:999px;color:rgba(255,255,255,.75);cursor:pointer;text-align:center;transition:background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease)}
+.level-btn.active{background:#fff;color:var(--hero-a);box-shadow:0 4px 10px rgba(0,0,0,.12)}
 
 .name-row{position:relative;display:flex;align-items:center;gap:8px;margin-top:16px;z-index:1}
 .id-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px;margin-top:8px;z-index:1}
@@ -110,6 +124,18 @@ body{
 .assign-item .info{font-size:12px;line-height:1.5}
 .assign-item .info b{color:var(--ink)}
 .assign-item .due{font-size:10.5px;color:var(--muted)}
+
+/* thẻ nhận xét từ GV */
+.feedback-card{
+  display:none;background:linear-gradient(135deg,#EAF6F5,#F5FDFC);border:1px solid var(--teal-soft);
+  border-radius:18px;margin:14px 16px 0;padding:13px 15px;
+}
+.feedback-card.show{display:block}
+.feedback-head{font-size:12px;font-weight:800;color:#0B5F60;margin-bottom:6px}
+.feedback-item{padding:8px 0;border-top:1px solid rgba(11,95,96,.12);font-size:12px}
+.feedback-item:first-child{border-top:none}
+.feedback-item .content{color:var(--ink);line-height:1.5}
+.feedback-item .time{color:var(--muted);font-size:10.5px;margin-top:2px}
 .assign-start-btn{flex:0 0 auto;background:var(--accent-a);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:800;cursor:pointer}
 
 /* form giao bài tập trong dashboard GV */
@@ -132,6 +158,7 @@ body{
 .gv-sub-item .score-tag{font-weight:800}
 .gv-sub-item audio{width:100%;height:32px;margin-top:4px}
 .gv-sub-noaudio{font-size:10.5px;color:var(--muted);font-style:italic}
+.gv-quick-fb-btn{margin-top:8px;background:var(--accent-soft);color:#B8541F;border:none;border-radius:9px;padding:6px 10px;font-size:10.5px;font-weight:800;cursor:pointer}
 .audio-upload-status{font-size:11px;margin-top:6px;color:var(--muted)}
 .audio-upload-status.ok{color:#0B5F60}
 .audio-upload-status.err{color:var(--danger)}
@@ -153,7 +180,7 @@ body{
 .top-right{display:flex;align-items:center;gap:8px;z-index:1;position:relative}
 .streak-badge{
   display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);
-  border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;color:#fff;backdrop-filter:blur(6px);
+  border-radius:999px;padding:6px 11px;font-family:var(--font-display);font-size:12px;font-weight:700;color:#fff;backdrop-filter:blur(6px);
 }
 .gv-btn{
   width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);
@@ -183,7 +210,7 @@ body{
   border-radius:24px 24px 0 0;padding:20px 18px 26px;box-shadow:0 -10px 40px rgba(0,0,0,.25);
 }
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.modal-title{font-size:16px;font-weight:800}
+.modal-title{font-family:var(--font-display);font-size:17px;font-weight:800}
 .modal-close{border:none;background:var(--bg);width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:var(--ink-soft)}
 .gv-login{display:flex;flex-direction:column;gap:10px}
 .gv-login input{height:42px;border:1px solid var(--line);border-radius:12px;padding:0 13px;font-size:13px}
@@ -194,7 +221,7 @@ body{
 .gv-summary-row .s{color:var(--muted);font-size:11.5px}
 .gv-stat-cards{display:flex;gap:8px;margin-bottom:10px}
 .gv-stat{flex:1;background:var(--bg);border-radius:14px;padding:10px;text-align:center}
-.gv-stat b{display:block;font-size:18px}
+.gv-stat b{font-family:var(--font-display);display:block;font-size:19px}
 .gv-stat span{font-size:10.5px;color:var(--muted)}
 .gv-export-btn{width:100%;margin-top:14px}
 .gv-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:20px 0}
@@ -213,7 +240,7 @@ body{
   background:var(--surface);font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
   transition:background .15s ease,color .15s ease,border-color .15s ease;
 }
-.topic-chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.topic-chip.active{background:linear-gradient(135deg,var(--hero-a),var(--hero-c));color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(14,156,144,.28)}
 
 /* progress rail */
 .rail{display:flex;gap:5px;margin:0 4px 14px}
@@ -223,13 +250,19 @@ body{
 
 /* main card */
 .stage{
+  position:relative;
   background:var(--surface);
-  border-radius:24px;
+  border-radius:26px;
   padding:24px 20px 20px;
-  box-shadow:0 1px 2px rgba(22,26,46,.04),0 20px 40px rgba(22,26,46,.09);
-  animation:cardIn .25s ease;
+  box-shadow:var(--shadow-lg);
+  animation:cardIn .3s var(--ease);
+  overflow:hidden;
 }
-@keyframes cardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.stage::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--hero-a),var(--teal),var(--accent-a),var(--accent-b));
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .eyebrow{
   display:flex;align-items:center;justify-content:space-between;
   font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
@@ -237,7 +270,7 @@ body{
 }
 .eyebrow .tag{background:var(--teal-soft);color:#0B6A61;padding:5px 10px;border-radius:999px;font-weight:800}
 .sentence{
-  font-size:22px;line-height:1.34;font-weight:800;letter-spacing:-.02em;
+  font-family:var(--font-display);font-size:23px;line-height:1.3;font-weight:700;letter-spacing:-.01em;
   margin:0 0 8px;color:var(--ink);
 }
 .translation{font-size:13.5px;color:var(--muted);margin:0 0 16px;font-style:italic}
@@ -258,17 +291,17 @@ body{
 .btn{
   height:48px;border-radius:14px;border:1.5px solid transparent;font-size:13.5px;font-weight:800;
   display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;user-select:none;
-  -webkit-tap-highlight-color:transparent;transition:transform .08s ease,box-shadow .15s ease,border-color .15s ease,opacity .15s ease;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease),box-shadow .2s var(--ease),border-color .15s ease,opacity .15s ease,filter .15s ease;
 }
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.4;cursor:default}
 .btn-ghost{background:var(--bg);border-color:var(--line);color:var(--ink)}
-.btn-ghost:hover{border-color:#CBCEE8}
+.btn-ghost:hover{border-color:#CBCEE8;transform:translateY(-1px)}
 .btn-teal{
   background:linear-gradient(135deg,var(--accent-a),var(--accent-b));color:#fff;
   box-shadow:0 8px 18px rgba(255,107,74,.32);
 }
-.btn-teal:hover{filter:brightness(1.04)}
+.btn-teal:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 12px 26px rgba(255,107,74,.4)}
 
 /* recorder */
 .recorder{
@@ -333,7 +366,7 @@ canvas#wave{width:100%;height:44px;display:block}
 .score-ring::before{
   content:'';position:absolute;inset:4px;border-radius:50%;background:var(--surface);
 }
-.score-ring span{position:relative;font-size:11.5px;font-weight:800;color:var(--ink)}
+.score-ring span{position:relative;font-family:var(--font-display);font-size:11.5px;font-weight:800;color:var(--ink)}
 .result-titles{flex:1}
 .result-label{font-weight:800;font-size:14px;color:var(--ink)}
 .result-frac{font-size:11.5px;color:var(--muted);font-weight:700}
@@ -359,7 +392,7 @@ canvas#wave{width:100%;height:44px;display:block}
 .summary.show{display:block;animation:cardIn .25s ease}
 .summary-card{background:var(--surface);border-radius:24px;padding:30px 22px;text-align:center;box-shadow:0 20px 40px rgba(22,26,46,.09)}
 .summary-score{
-  font-size:48px;font-weight:800;letter-spacing:-.02em;
+  font-family:var(--font-display);font-size:50px;font-weight:800;letter-spacing:-.02em;
   background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
@@ -437,6 +470,11 @@ canvas#wave{width:100%;height:44px;display:block}
 <div class="assign-card" id="assignCard">
   <div class="assign-head">📌 Bài tập được giao</div>
   <div id="assignBody"></div>
+</div>
+
+<div class="feedback-card" id="feedbackCard">
+  <div class="feedback-head">💬 Nhận xét từ giảng viên</div>
+  <div id="feedbackBody"></div>
 </div>
 
 <div class="content">
@@ -634,6 +672,25 @@ canvas#wave{width:100%;height:44px;display:block}
       </div>
       <div id="gvAssignList"></div>
 
+      <div class="gv-section-title">💬 Góp ý cho sinh viên</div>
+      <div class="gv-form">
+        <div class="gv-form-row">
+          <div style="flex:1"><label>MSSV</label><input id="gvFbMssv" placeholder="VD: 246501087" autocomplete="off"></div>
+          <div style="flex:1"><label>Họ tên (tuỳ chọn)</label><input id="gvFbName" placeholder="Tự điền nếu biết" autocomplete="off"></div>
+        </div>
+        <div>
+          <label>Nội dung góp ý</label>
+          <textarea id="gvFbContent" rows="3" placeholder="VD: Em phát âm khá tốt, cần chú ý âm cuối của từ. Cố gắng luyện thêm phần Công việc nhé!" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
+        </div>
+        <div class="gv-error" id="gvFbError"></div>
+        <button class="btn btn-teal" onclick="sendFeedback()">Gửi góp ý</button>
+      </div>
+      <div class="gv-form-row" style="margin-top:8px">
+        <input id="gvFbFilterClass" placeholder="Lọc theo lớp (để trống = tất cả)" style="flex:1;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:12.5px;background:var(--bg)">
+        <button class="btn btn-ghost" style="flex:0 0 auto" onclick="loadAllFeedback()">Tải danh sách</button>
+      </div>
+      <div id="gvFbList"></div>
+
       <div class="gv-section-title">🔒 Bảo mật</div>
       <button class="btn btn-ghost gv-export-btn" onclick="showChangePasswordFromDashboard()">Đổi mật khẩu giảng viên</button>
     </div>
@@ -701,6 +758,7 @@ function verifyStudentId(){
         setVerifyNote('Đã xác nhận: ' + data.name + (verifiedClass ? ' — Lớp ' + verifiedClass : ''), 'ok');
         renderStreakBadge();
         loadAssignments();
+        loadFeedback();
       } else if(data && data.status==='no_roster'){
         setVerifyNote('Trường chưa cấu hình danh sách MSSV — cứ gõ tên thủ công bên dưới.', 'err');
       } else {
@@ -741,6 +799,24 @@ function loadAssignments(){
       renderAssignCard();
     })
     .catch(()=>{ currentAssignments=[]; renderAssignCard(); });
+}
+
+function loadFeedback(){
+  const card = document.getElementById('feedbackCard');
+  if(!verifiedId || !logIsConfigured()){ card.classList.remove('show'); return; }
+  fetch(LOG_ENDPOINT + '?action=feedback&mssv=' + encodeURIComponent(verifiedId))
+    .then(res=>res.json())
+    .then(data=>{
+      const items = (data && data.status==='ok') ? data.items : [];
+      const body = document.getElementById('feedbackBody');
+      if(!items.length){ card.classList.remove('show'); return; }
+      card.classList.add('show');
+      body.innerHTML = items.map(f=>`<div class="feedback-item">
+        <div class="content">${f.content}</div>
+        <div class="time">${f.time}</div>
+      </div>`).join('');
+    })
+    .catch(()=>{ card.classList.remove('show'); });
 }
 
 function renderAssignCard(){
@@ -951,6 +1027,7 @@ function enterGvDashboard(){
   refreshGvData();
   loadGvAssignments();
   loadStudents();
+  loadAllFeedback();
 }
 
 function refreshGvData(){
@@ -1220,10 +1297,80 @@ function loadSubmissions(){
           <div class="trans">"${r.transcript||''}"</div>
           <div><span class="score-tag" style="color:${scoreColor}">${r.score!=null?r.score+'%':'—'}</span>${r.confidence!=null?' · độ rõ '+r.confidence+'%':''}</div>
           ${audioHtml}
+          ${r.studentId ? `<button class="gv-quick-fb-btn" onclick="quickFeedback('${r.studentId}','${(r.user||'').replace(/'/g,"\\'")}')">💬 Viết góp ý cho SV này</button>` : ''}
         </div>`;
       }).join('');
     })
     .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được bài làm.</div>'; });
+}
+
+function quickFeedback(mssv, name){
+  document.getElementById('gvFbMssv').value = mssv;
+  document.getElementById('gvFbName').value = name || '';
+  document.getElementById('gvFbContent').focus();
+  document.getElementById('gvFbContent').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ---------- GV: góp ý cho sinh viên ---------- */
+function sendFeedback(){
+  const errEl = document.getElementById('gvFbError');
+  errEl.classList.remove('show');
+  const mssv = document.getElementById('gvFbMssv').value.trim();
+  const name = document.getElementById('gvFbName').value.trim();
+  const content = document.getElementById('gvFbContent').value.trim();
+  if(!mssv){ errEl.textContent='Nhập MSSV trước.'; errEl.classList.add('show'); return; }
+  if(!content){ errEl.textContent='Nhập nội dung góp ý.'; errEl.classList.add('show'); return; }
+
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'add_feedback', token:gvToken, mssv, name, content})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data && data.status==='ok'){
+      document.getElementById('gvFbContent').value='';
+      loadAllFeedback();
+    } else {
+      errEl.textContent = (data && data.message) || 'Không gửi được góp ý.';
+      errEl.classList.add('show');
+    }
+  })
+  .catch(()=>{ errEl.textContent='Không kết nối được, thử lại sau.'; errEl.classList.add('show'); });
+}
+
+function loadAllFeedback(){
+  const list = document.getElementById('gvFbList');
+  if(!logIsConfigured()){ list.innerHTML=''; return; }
+  const cls = document.getElementById('gvFbFilterClass').value.trim();
+  list.innerHTML = '<div class="gv-empty">Đang tải...</div>';
+  let url = LOG_ENDPOINT + '?action=feedback_all&token=' + encodeURIComponent(gvToken);
+  if(cls) url += '&class=' + encodeURIComponent(cls);
+  fetch(url)
+    .then(res=>res.json())
+    .then(data=>{
+      const items = (data && data.status==='ok') ? data.items : [];
+      if(!items.length){ list.innerHTML = '<div class="gv-empty">Chưa có góp ý nào.</div>'; return; }
+      list.innerHTML = items.map(f=>`<div class="gv-assign-list-item">
+        <div class="info"><b>${f.mssv}</b>${f.name?' · '+f.name:''}${f.className?' · Lớp '+f.className:''}<br>
+        <span style="color:var(--ink-soft);font-size:11.5px">${f.content}</span><br>
+        <span style="color:var(--muted);font-size:10.5px">${f.time}</span></div>
+        <button class="gv-assign-del" onclick="deleteFeedbackGv('${f.id}')">Xoá</button>
+      </div>`).join('');
+    })
+    .catch(()=>{ list.innerHTML = '<div class="gv-empty">Không tải được góp ý.</div>'; });
+}
+
+function deleteFeedbackGv(id){
+  if(!confirm('Xoá góp ý này?')) return;
+  fetch(LOG_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'delete_feedback', token:gvToken, id})
+  })
+  .then(res=>res.json())
+  .then(()=> loadAllFeedback())
+  .catch(()=> alert('Không xoá được, thử lại sau.'));
 }
 
 /* ---------- content ---------- */
