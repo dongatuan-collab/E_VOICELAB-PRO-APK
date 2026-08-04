@@ -58,6 +58,35 @@ body{
 }
 .app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 0 40px;position:relative}
 
+/* Bố cục cho màn hình rộng (máy tính/tablet ngang) — tránh cảnh cột hẹp lọt thỏm
+   giữa khoảng trống trắng, giữ nguyên toàn bộ cấu trúc/hành vi bên trong .app */
+@media (min-width:860px){
+  body{
+    background:
+      radial-gradient(1400px 800px at 15% -10%, rgba(14,156,144,.14), transparent 55%),
+      radial-gradient(1200px 700px at 100% 0%, rgba(255,107,74,.10), transparent 50%),
+      radial-gradient(900px 600px at 50% 100%, rgba(27,42,91,.06), transparent 55%),
+      var(--bg);
+    min-height:100vh;
+    padding:36px 20px;
+  }
+  .app{
+    max-width:640px;
+    box-shadow:0 30px 90px rgba(22,26,46,.16);
+    border-radius:32px;
+    overflow:hidden;
+    padding-bottom:32px;
+    background:var(--surface);
+  }
+  .hero{border-radius:0}
+  .content{margin-left:20px;margin-right:20px}
+  .sentence{font-size:26px}
+  .stage{padding:30px 26px 24px}
+}
+@media (min-width:860px) and (max-width:1023px){
+  .app{max-width:600px}
+}
+
 /* hero header */
 .hero{
   position:relative;overflow:hidden;
@@ -208,6 +237,10 @@ body{
 .modal-card{
   width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--surface);
   border-radius:24px 24px 0 0;padding:20px 18px 26px;box-shadow:0 -10px 40px rgba(0,0,0,.25);
+}
+@media (min-width:860px){
+  .modal-overlay{align-items:center;padding:20px}
+  .modal-card{max-width:640px;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 }
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .modal-title{font-family:var(--font-display);font-size:17px;font-weight:800}
