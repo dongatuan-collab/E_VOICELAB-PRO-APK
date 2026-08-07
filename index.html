@@ -259,6 +259,13 @@ body{
 }
 .ios-note.show{display:block}
 
+.ai-transcribe-btn{
+  display:none;width:100%;margin:0 0 12px;padding:12px;border:1.5px dashed var(--teal);border-radius:14px;
+  background:var(--teal-soft);color:#0B5F60;font-size:12.5px;font-weight:800;cursor:pointer;
+}
+.ai-transcribe-btn.show{display:block}
+.ai-transcribe-btn:disabled{opacity:.6;cursor:default}
+
 /* word-level highlight in result */
 .word-chip{display:inline-block;padding:1px 6px;border-radius:6px;margin:2px 3px 0 0;font-size:12.5px;font-weight:700}
 .word-ok{background:var(--teal-soft);color:#0B5F60}
@@ -590,6 +597,8 @@ canvas#wave{width:100%;height:44px;display:block}
 
     <div class="ios-note" id="iosNote">📱 Trên iPhone/iPad (Safari), trình duyệt chưa hỗ trợ tự nhận diện giọng nói khi ghi âm, nên bài sẽ tự chuyển sang chế độ gõ/nói qua micro bàn phím bên dưới. Đây là giới hạn của Safari, không phải lỗi của app — chấm điểm vẫn chính xác bình thường.</div>
 
+    <button class="ai-transcribe-btn" id="aiTranscribeBtn" onclick="tryAiTranscribe()">🤖 Thử nhận diện bằng AI (dùng bản ghi âm vừa rồi)</button>
+
     <div class="fallback" id="fallbackPanel">
       <div class="fallback-note">⌨️ Thiết bị/trình duyệt này chặn nhận diện giọng nói tự động. Bấm vào ô bên dưới, dùng icon micro trên bàn phím (Gboard) để nói, chữ sẽ tự điền vào — vẫn chấm điểm được bình thường.</div>
       <input id="typedInput" class="input-field" type="text" autocomplete="off" spellcheck="false"
@@ -617,7 +626,7 @@ canvas#wave{width:100%;height:44px;display:block}
   <div class="footer">
     <p><strong>Mẹo:</strong> đọc chậm, rõ từng từ. Nếu điểm thấp, bấm Ghi lại và thử lại — phản xạ tốt hơn sau vài lần luyện.</p>
     <button class="install-btn" id="installBtn" onclick="clickInstallApp()">📲 Cài đặt ứng dụng lên máy</button>
-    <p class="app-version">Phiên bản v3.2</p>
+    <p class="app-version">Phiên bản v3.3</p>
   </div>
 </div>
 </div>
@@ -2359,9 +2368,15 @@ async function toggleRecording(){
       if(recognitionSupported){
         transcripts[current] = liveTranscript.trim();
         document.getElementById('scoreBtn').disabled = false;
-        document.getElementById('recState').textContent = liveTranscript.trim()
-          ? 'Đã nhận diện giọng nói. Bấm Chấm điểm để xem kết quả.'
-          : 'Không nhận diện được lời nói rõ ràng — thử ghi lại, nói to và chậm hơn, và kiểm tra mạng (nhận diện giọng nói cần có Internet).';
+        const aiBtn = document.getElementById('aiTranscribeBtn');
+        if(liveTranscript.trim()){
+          document.getElementById('recState').textContent = 'Đã nhận diện giọng nói. Bấm Chấm điểm để xem kết quả.';
+          if(aiBtn) aiBtn.classList.remove('show');
+        } else {
+          document.getElementById('recState').textContent = 'Máy này không nhận diện được lời nói qua trình duyệt — bấm nút bên dưới để thử nhận diện bằng AI, hoặc gõ tay câu vừa nói.';
+          document.getElementById('fallbackPanel').classList.add('show');
+          if(aiBtn) aiBtn.classList.add('show');
+        }
       } else {
         document.getElementById('scoreBtn').disabled = false;
         document.getElementById('recState').textContent = 'Đã ghi âm xong. Gõ lại câu bạn vừa nói ở ô bên dưới rồi bấm Chấm điểm.';
@@ -2509,6 +2524,57 @@ function paintResult(r, typed){
     <div class="ai-coach-box" id="aiCoachBox"></div>
   `;
   buildRail();
+}
+
+function tryAiTranscribe(){
+  const btn = document.getElementById('aiTranscribeBtn');
+  const blob = recordedBlobs[current];
+  if(!blob || blob.size===0){
+    alert('Chưa có bản ghi âm nào cho câu này — hãy ghi âm trước.');
+    return;
+  }
+  if(!logIsConfigured()){
+    alert('Chưa cấu hình Apps Script (LOG_ENDPOINT) nên chưa dùng được tính năng này.');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '🤖 Đang nhờ AI nghe lại bản ghi...';
+
+  const reader = new FileReader();
+  reader.onloadend = ()=>{
+    const base64 = (reader.result || '').toString().split(',')[1] || '';
+    if(!base64){
+      btn.disabled = false;
+      btn.textContent = '🤖 Thử nhận diện bằng AI (dùng bản ghi âm vừa rồi)';
+      alert('Không đọc được dữ liệu ghi âm.');
+      return;
+    }
+    fetch(LOG_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'transcribe', audio: base64, expected: sentences[current].en})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      btn.disabled = false;
+      btn.textContent = '🤖 Thử nhận diện bằng AI (dùng bản ghi âm vừa rồi)';
+      if(data && data.status==='ok' && data.transcript){
+        transcripts[current] = data.transcript;
+        liveTranscript = data.transcript;
+        document.getElementById('recState').textContent = 'AI đã nghe và nhận diện: "' + data.transcript + '" — bấm Chấm điểm để xem kết quả.';
+        document.getElementById('typedInput').value = data.transcript;
+        document.getElementById('scoreBtn').disabled = false;
+      } else {
+        alert((data && data.message) || 'AI không nhận diện được, hãy thử gõ tay câu vừa nói.');
+      }
+    })
+    .catch(()=>{
+      btn.disabled = false;
+      btn.textContent = '🤖 Thử nhận diện bằng AI (dùng bản ghi âm vừa rồi)';
+      alert('Không kết nối được để nhận diện bằng AI, thử lại sau.');
+    });
+  };
+  reader.readAsDataURL(blob);
 }
 
 function handleScore(){

@@ -9,7 +9,7 @@
  * SV/GV KHÔNG CẦN gỡ cài đặt / cài lại app nữa, chỉ cần bấm nút trong banner
  * (hoặc đơn giản là đóng app và mở lại vài lần).
  */
-const CACHE_VERSION = 'v3.2';
+const CACHE_VERSION = 'v3.3';
 const CACHE_NAME = 'voicelab-cache-' + CACHE_VERSION;
 
 // Đường dẫn app shell cần cache để chạy được khi mất mạng.
