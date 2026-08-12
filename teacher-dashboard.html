@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Voice Lab — Bảng điều khiển giảng viên</title>
+<style>
+:root{
+  --ink:#161A2E;
+  --ink-soft:#454A68;
+  --muted:#8388A6;
+  --bg:#F3F4FA;
+  --surface:#FFFFFF;
+  --line:#E7E8F3;
+  --hero-a:#1B2A5B;
+  --hero-b:#0E7C77;
+  --accent-a:#FF6B4A;
+  --accent-b:#FFB648;
+  --teal:#0E9C90;
+  --teal-soft:#DDF4F0;
+  --amber:#E3A008;
+  --amber-soft:#FDF1D6;
+  --danger:#E5484D;
+  --danger-soft:#FDE4E4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+.app{max-width:720px;margin:0 auto;min-height:100vh;padding:0 0 40px}
+
+.hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%);
+  padding:22px 18px 40px;border-radius:0 0 28px 28px;color:#fff;
+}
+.hero::before{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);top:-90px;right:-60px}
+.hero::after{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,74,.28),transparent 70%);bottom:-90px;left:-50px}
+.top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:1}
+.teacher-badge{display:none;align-items:center;gap:8px}
+.teacher-badge.show{display:flex}
+.teacher-email{font-size:11px;color:rgba(255,255,255,.75);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);color:#fff;
+  border-radius:999px;padding:7px 13px;font-size:11.5px;font-weight:800;cursor:pointer;
+}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;box-shadow:0 6px 14px rgba(255,107,74,.35)}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.brand-sub{font-size:11.5px;color:rgba(255,255,255,.72)}
+
+.content{position:relative;margin:-20px 14px 0;z-index:2}
+
+/* login gate */
+.gate{background:var(--surface);border-radius:24px;padding:28px 22px;box-shadow:0 20px 40px rgba(22,26,46,.09);text-align:center}
+.gate p{font-size:13px;color:var(--muted);margin:6px 0 18px}
+.gate input{width:100%;height:48px;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;font-size:15px;margin-bottom:12px;outline:none}
+.gate input:focus{border-color:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+.gate-err{color:var(--danger);font-size:12.5px;margin-top:-4px;margin-bottom:10px;display:none}
+.gate-err.show{display:block}
+
+/* generic */
+.btn{
+  height:46px;border-radius:14px;border:none;font-size:13.5px;font-weight:800;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent-a),var(--accent-b));color:#fff;box-shadow:0 8px 18px rgba(255,107,74,.32)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-ghost{background:var(--bg);color:var(--ink);border:1.5px solid var(--line)}
+.btn-sm{height:36px;font-size:12px;padding:0 14px;width:auto}
+.btn-danger{background:var(--danger-soft);color:#8E2A32}
+
+.card{background:var(--surface);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(22,26,46,.04),0 12px 28px rgba(22,26,46,.06)}
+.card h2{font-size:14px;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:7px}
+
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.filter-row input{flex:1;min-width:110px;height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:12.5px;outline:none}
+.filter-row input:focus{border-color:var(--teal)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 1px 2px rgba(22,26,46,.04),0 10px 22px rgba(22,26,46,.06)}
+.stat-num{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat-label{font-size:10.5px;color:var(--muted);font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding:0 8px 8px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+tr:last-child td{border-bottom:none}
+.empty-row{text-align:center;color:var(--muted);padding:20px 0;font-size:12.5px}
+
+.bar-row{margin-bottom:10px}
+.bar-row .bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.bar-track{height:8px;border-radius:6px;background:var(--bg);overflow:hidden}
+.bar-fill{height:100%;border-radius:6px}
+
+.assign-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.assign-form input,.assign-form select,.assign-form textarea{
+  border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit;
+}
+.assign-form input:focus,.assign-form select:focus,.assign-form textarea:focus{border-color:var(--teal)}
+.assign-form .full{grid-column:1 / -1}
+
+.assignment-item{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.assignment-item .ai-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.assignment-item .ai-title{font-size:13px;font-weight:800}
+.assignment-item .ai-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.assignment-item .ai-note{font-size:12px;color:var(--ink-soft);margin-top:6px}
+
+.toolbar{display:flex;gap:8px;margin-bottom:14px}
+.toolbar .btn{width:auto;flex:1}
+
+.status-msg{font-size:12px;text-align:center;color:var(--muted);padding:10px 0}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <div class="top">
+      <div class="brand-mark">VL</div>
+      <div style="flex:1">
+        <div class="brand-name">Voice Lab</div>
+        <div class="brand-sub">Bảng điều khiển giảng viên</div>
+      </div>
+      <div class="teacher-badge" id="teacherBadge">
+        <span class="teacher-email" id="teacherEmailLabel"></span>
+        <button class="logout-btn" onclick="teacherLogout()">Đăng xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="gateView" class="gate">
+      <h2 style="margin:0 0 4px">Đăng nhập giảng viên</h2>
+      <p>Nhập email và mật khẩu giảng viên đã được cấp để xem thống kê lớp và giao bài tập.</p>
+      <input id="emailInput" type="email" placeholder="Email giảng viên (VD: tuantq@bctech.edu.vn)" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('tokenInput').focus()">
+      <input id="tokenInput" type="password" placeholder="Mật khẩu giảng viên" onkeydown="if(event.key==='Enter')login()">
+      <div class="gate-err" id="gateErr">Sai mật khẩu hoặc chưa cấu hình API_ENDPOINT trong code.</div>
+      <button class="btn btn-primary" onclick="login()">Đăng nhập</button>
+    </div>
+
+    <div id="dashboardView" class="hidden">
+
+      <div class="card">
+        <h2>🔍 Lọc dữ liệu</h2>
+        <div class="filter-row">
+          <input id="filterClass" type="text" placeholder="Lớp (để trống = tất cả)">
+          <input id="filterFrom" type="date">
+          <input id="filterTo" type="date">
+        </div>
+        <div class="toolbar" style="margin-top:10px;margin-bottom:0">
+          <button class="btn btn-teal" onclick="loadStats()">Lọc / Làm mới</button>
+          <button class="btn btn-ghost" onclick="exportCsv()">⬇ Xuất CSV</button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="statAttempts">–</div><div class="stat-label">Lượt luyện</div></div>
+        <div class="stat-card"><div class="stat-num" id="statAvg">–</div><div class="stat-label">Điểm TB</div></div>
+        <div class="stat-card"><div class="stat-num" id="statStudents">–</div><div class="stat-label">Sinh viên</div></div>
+      </div>
+
+      <div class="card">
+        <h2>👤 Theo sinh viên</h2>
+        <div id="studentTableWrap">
+          <table>
+            <thead><tr><th>Tên</th><th>Lớp</th><th>Lượt</th><th>Điểm TB</th><th>Lần cuối</th></tr></thead>
+            <tbody id="studentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Chủ đề yếu nhất (điểm TB thấp → cao)</h2>
+        <div id="categoryBars"></div>
+      </div>
+
+      <div class="card">
+        <h2>📌 Giao bài tập mới</h2>
+        <div class="assign-form">
+          <input id="afClass" type="text" placeholder="Lớp (VD: CNTT21A)">
+          <select id="afLevel">
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+            <option value="C2">C2</option>
+          </select>
+          <input id="afCategory" type="text" placeholder="Chủ đề (để trống = tất cả)">
+          <input id="afTeacher" type="text" placeholder="Tên giảng viên">
+          <input id="afStart" type="date">
+          <input id="afEnd" type="date">
+          <textarea id="afNote" class="full" rows="2" placeholder="Ghi chú cho sinh viên (tuỳ chọn)"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="createAssignment()">Giao bài tập</button>
+        <div class="status-msg" id="assignMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2>📋 Bài tập đã giao</h2>
+        <div id="assignmentList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Sau khi deploy Code.gs làm Web App, dán URL /exec vào đây (giống hệt file sinh viên):
+const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxNUWA1_nlaUCaGWbRCkafjkXDi8pyiWbN-Z0YUx0bgzQ5U04jhSeI6ekVwmIjnYx0Z/exec";
+let TOKEN = "";
+let TEACHER_EMAIL = "";
+let lastLogsCache = null;
+
+const LS_TEACHER_EMAIL_KEY = 'voicelab_teacher_email_v1';
+function storageAvailable(){
+  try{ const k='__vl_t__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; }catch(e){ return false; }
+}
+const HAS_LOCAL_STORAGE = storageAvailable();
+
+function apiConfigured(){
+  return API_ENDPOINT && API_ENDPOINT.indexOf("PASTE_YOUR") === -1 && API_ENDPOINT.startsWith("http");
+}
+
+function callApi(payload){
+  return fetch(API_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  }).then(res=>res.json());
+}
+
+function prefillTeacherEmail(){
+  if(!HAS_LOCAL_STORAGE) return;
+  try{
+    const saved = localStorage.getItem(LS_TEACHER_EMAIL_KEY);
+    if(saved) document.getElementById('emailInput').value = saved;
+  }catch(e){}
+}
+
+function login(){
+  const email = document.getElementById('emailInput').value.trim();
+  const val = document.getElementById('tokenInput').value.trim();
+  const err = document.getElementById('gateErr');
+  if(!apiConfigured()){
+    err.textContent = 'Chưa cấu hình API_ENDPOINT trong code — hãy dán URL Apps Script /exec trước.';
+    err.classList.add('show');
+    return;
+  }
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    err.textContent = 'Vui lòng nhập email hợp lệ.'; err.classList.add('show'); return;
+  }
+  if(!val){ err.textContent='Vui lòng nhập mật khẩu.'; err.classList.add('show'); return; }
+  TOKEN = val;
+  TEACHER_EMAIL = email;
+  // thử gọi dashboard_stats để xác thực token + email
+  callApi({ action:'dashboard_stats', token: TOKEN, email: TEACHER_EMAIL }).then(data=>{
+    if(data && data.status==='ok'){
+      err.classList.remove('show');
+      document.getElementById('gateView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      document.getElementById('teacherBadge').classList.add('show');
+      document.getElementById('teacherEmailLabel').textContent = TEACHER_EMAIL;
+      document.getElementById('afTeacher').value = TEACHER_EMAIL;
+      if(HAS_LOCAL_STORAGE){ try{ localStorage.setItem(LS_TEACHER_EMAIL_KEY, TEACHER_EMAIL); }catch(e){} }
+      renderStats(data);
+      loadAssignments();
+    } else {
+      err.textContent = data && data.message ? data.message : 'Sai mật khẩu hoặc email chưa được cấp quyền.';
+      err.classList.add('show');
+    }
+  }).catch(()=>{
+    err.textContent = 'Không kết nối được tới Apps Script. Kiểm tra API_ENDPOINT / mạng.';
+    err.classList.add('show');
+  });
+}
+
+function teacherLogout(){
+  if(!confirm('Đăng xuất khỏi bảng điều khiển giảng viên?')) return;
+  TOKEN = ""; TEACHER_EMAIL = "";
+  document.getElementById('tokenInput').value = '';
+  document.getElementById('dashboardView').classList.add('hidden');
+  document.getElementById('teacherBadge').classList.remove('show');
+  document.getElementById('gateView').classList.remove('hidden');
+}
+
+function currentFilters(){
+  return {
+    className: document.getElementById('filterClass').value.trim(),
+    fromDate: document.getElementById('filterFrom').value || '',
+    toDate: document.getElementById('filterTo').value || ''
+  };
+}
+
+function loadStats(){
+  const f = currentFilters();
+  callApi(Object.assign({ action:'dashboard_stats', token: TOKEN, email: TEACHER_EMAIL }, f)).then(data=>{
+    if(data && data.status==='ok') renderStats(data);
+  });
+  loadAssignments();
+}
+
+function renderStats(data){
+  document.getElementById('statAttempts').textContent = data.totalAttempts ?? 0;
+  document.getElementById('statAvg').textContent = (data.avgScore ?? 0) + '%';
+  document.getElementById('statStudents').textContent = data.studentCount ?? 0;
+
+  const tbody = document.getElementById('studentTableBody');
+  if(!data.students || !data.students.length){
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Chưa có dữ liệu phù hợp bộ lọc.</td></tr>';
+  } else {
+    tbody.innerHTML = data.students.map(s=>`
+      <tr>
+        <td>${escapeHtml(s.user)}</td>
+        <td>${escapeHtml(s.email||'')}</td>
+        <td>${escapeHtml(s.className)}</td>
+        <td>${s.count}</td>
+        <td>${s.avgScore}%</td>
+        <td>${escapeHtml(s.lastPractice)}</td>
+      </tr>
+    `).join('');
+  }
+
+  const catWrap = document.getElementById('categoryBars');
+  if(!data.categories || !data.categories.length){
+    catWrap.innerHTML = '<div class="empty-row">Chưa có dữ liệu.</div>';
+  } else {
+    catWrap.innerHTML = data.categories.map(c=>{
+      const color = c.avgScore>=80 ? 'var(--teal)' : c.avgScore>=55 ? 'var(--amber)' : 'var(--danger)';
+      return `
+        <div class="bar-row">
+          <div class="bar-label"><span>${escapeHtml(c.category)}</span><span>${c.avgScore}% · ${c.count} lượt</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c.avgScore}%;background:${color}"></div></div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function loadAssignments(){
+  callApi({ action:'list_assignments', className: document.getElementById('filterClass').value.trim() }).then(data=>{
+    const wrap = document.getElementById('assignmentList');
+    if(!data || data.status!=='ok' || !data.assignments || !data.assignments.length){
+      wrap.innerHTML = '<div class="empty-row">Chưa có bài tập nào được giao.</div>';
+      return;
+    }
+    wrap.innerHTML = data.assignments.map(a=>`
+      <div class="assignment-item">
+        <div class="ai-top">
+          <div>
+            <div class="ai-title">${escapeHtml(a.className)} · ${escapeHtml(a.level)}${a.category && a.category!=='ALL' ? ' · '+escapeHtml(a.category) : ' · Tất cả chủ đề'}</div>
+            <div class="ai-meta">${a.startDate || '—'} → ${a.endDate || 'không giới hạn'} · ${escapeHtml(a.teacher||'')}</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteAssignment('${a.id}')">Xoá</button>
+        </div>
+        ${a.note ? `<div class="ai-note">${escapeHtml(a.note)}</div>` : ''}
+      </div>
+    `).join('');
+  });
+}
+
+function createAssignment(){
+  const msg = document.getElementById('assignMsg');
+  const payload = {
+    action: 'create_assignment',
+    token: TOKEN,
+    email: TEACHER_EMAIL,
+    className: document.getElementById('afClass').value.trim(),
+    level: document.getElementById('afLevel').value,
+    category: document.getElementById('afCategory').value.trim() || 'ALL',
+    teacher: document.getElementById('afTeacher').value.trim(),
+    startDate: document.getElementById('afStart').value,
+    endDate: document.getElementById('afEnd').value,
+    note: document.getElementById('afNote').value.trim()
+  };
+  if(!payload.className){ msg.textContent = 'Vui lòng nhập tên lớp.'; return; }
+  msg.textContent = 'Đang lưu...';
+  callApi(payload).then(data=>{
+    if(data && data.status==='ok'){
+      msg.textContent = '✓ Đã giao bài tập.';
+      document.getElementById('afClass').value='';
+      document.getElementById('afCategory').value='';
+      document.getElementById('afNote').value='';
+      loadAssignments();
+    } else {
+      msg.textContent = 'Lỗi: ' + (data && data.message || 'không rõ nguyên nhân');
+    }
+  }).catch(()=>{ msg.textContent = 'Không gửi được yêu cầu.'; });
+}
+
+function deleteAssignment(id){
+  if(!confirm('Xoá bài tập này?')) return;
+  callApi({ action:'delete_assignment', token: TOKEN, email: TEACHER_EMAIL, id: id }).then(()=>loadAssignments());
+}
+
+function exportCsv(){
+  const f = currentFilters();
+  callApi(Object.assign({ action:'list_logs', token: TOKEN, email: TEACHER_EMAIL }, f)).then(data=>{
+    if(!data || data.status!=='ok' || !data.rows){ alert('Không lấy được dữ liệu để xuất.'); return; }
+    const csv = data.rows.map(row=>row.map(cell=>{
+      const s = String(cell ?? '');
+      return '"' + s.replace(/"/g,'""') + '"';
+    }).join(',')).join('\n');
+    const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'voicelab-log-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }).catch(()=>alert('Không xuất được CSV.'));
+}
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+prefillTeacherEmail();
+</script>
+</body>
+</html>
