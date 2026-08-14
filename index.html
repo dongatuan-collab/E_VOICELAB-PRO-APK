@@ -199,7 +199,7 @@ body{
 .feedback-head{font-size:12px;font-weight:800;color:#0B5F60;margin-bottom:6px}
 .feedback-item{padding:8px 0;border-top:1px solid rgba(11,95,96,.12);font-size:12px}
 .feedback-item:first-child{border-top:none}
-.feedback-item .content{color:var(--ink);line-height:1.5}
+.feedback-item .fb-text{color:var(--ink);line-height:1.5}
 .feedback-item .time{color:var(--muted);font-size:10.5px;margin-top:2px}
 .assign-start-btn{flex:0 0 auto;background:var(--accent-a);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:800;cursor:pointer}
 
@@ -300,10 +300,32 @@ body{
 .gv-stat b{font-family:var(--font-display);display:block;font-size:19px}
 .gv-stat span{font-size:10.5px;color:var(--muted)}
 .gv-export-btn{width:100%;margin-top:14px}
+
+/* accordion cho các khối thao tác trong dashboard GV — gập lại mặc định,
+   chạm vào tiêu đề để mở/đóng, giữ giao diện gọn gàng */
+.gv-acc{border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden}
+.gv-acc summary{
+  list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;font-size:13px;font-weight:800;color:var(--ink);
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.gv-acc summary::-webkit-details-marker{display:none}
+.gv-acc summary .gv-acc-chevron{
+  flex:0 0 auto;font-size:11px;color:var(--muted);transition:transform .2s ease;
+}
+.gv-acc[open] summary .gv-acc-chevron{transform:rotate(90deg)}
+.gv-acc[open] summary{border-bottom:1px solid var(--line);background:var(--bg)}
+.gv-acc-body{padding:14px}
+.gv-acc summary .gv-acc-hint{
+  font-size:10.5px;font-weight:600;color:var(--muted);margin-right:auto;margin-left:8px;
+}
 .gv-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:20px 0}
 
 /* content sheet overlapping hero */
-.content{position:relative;margin:-28px 14px 0;z-index:2}
+.content{position:relative;margin:14px 14px 0;z-index:2}
+/* hiệu ứng "chờm lên" hero chỉ dành cho khối trắng chính (.content) khi nó nằm
+   ngay sau hero — không áp cho assign-card/feedback-card vì sẽ che mất tiêu đề */
+.hero + .content{margin-top:-28px}
 
 /* topic filter */
 .topic-row{
@@ -687,92 +709,112 @@ canvas#wave{width:100%;height:44px;display:block}
       <button class="btn btn-ghost gv-export-btn" onclick="exportGvCsv()">⬇ Xuất CSV</button>
       <button class="btn btn-ghost gv-export-btn" onclick="refreshGvData()">↻ Tải lại dữ liệu</button>
 
-      <div class="gv-section-title">🎧 Bài làm chi tiết (nghe lại ghi âm)</div>
-      <div class="gv-form">
-        <div class="gv-form-row">
-          <div style="flex:1"><label>Lọc theo Lớp</label><input id="gvSubClass" placeholder="Để trống = tất cả"></div>
-          <div style="flex:1"><label>Lọc theo MSSV</label><input id="gvSubStudent" placeholder="Để trống = tất cả"></div>
-        </div>
-        <button class="btn btn-ghost" onclick="loadSubmissions()">Xem bài làm</button>
-      </div>
-      <div id="gvSubmissionList"></div>
-
-      <div class="gv-section-title">🧑‍🎓 Quản lý danh sách lớp</div>
-      <div class="gv-form">
-        <div class="gv-form-row">
-          <div style="flex:1"><label>MSSV</label><input id="gvStuId" placeholder="VD: 2023CK01" autocomplete="off"></div>
-          <div style="flex:1"><label>Họ tên</label><input id="gvStuName" placeholder="Nguyễn Văn A" autocomplete="off"></div>
-        </div>
-        <div><label>Lớp</label><input id="gvStuClass" placeholder="VD: CK21A" autocomplete="off"></div>
-        <div class="gv-error" id="gvStuError"></div>
-        <button class="btn btn-teal" onclick="addStudent()">Thêm / Cập nhật SV</button>
-      </div>
-      <div id="gvStuList"></div>
-
-      <div style="margin-top:14px">
-        <button class="btn btn-ghost gv-export-btn" onclick="toggleBulkImport()" id="bulkToggleBtn">📋 Nhập nhanh cả lớp (dán danh sách)</button>
-        <div class="gv-form" id="bulkImportBox" style="display:none;margin-top:10px">
-          <div><label>Lớp áp dụng cho cả danh sách dán bên dưới</label><input id="gvBulkClass" placeholder="VD: CD24DCN3" autocomplete="off"></div>
-          <div>
-            <label>Mỗi dòng 1 sinh viên, cách nhau bằng dấu phẩy hoặc Tab: <b>MSSV, Họ và tên</b></label>
-            <textarea id="gvBulkText" rows="6" placeholder="246501076, Trần Công Bằng&#10;246501077, Đỗ Văn Điền&#10;..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
+      <details class="gv-acc">
+        <summary>🎧 Bài làm chi tiết (nghe lại ghi âm) <span class="gv-acc-chevron">▶</span></summary>
+        <div class="gv-acc-body">
+          <div class="gv-form">
+            <div class="gv-form-row">
+              <div style="flex:1"><label>Lọc theo Lớp</label><input id="gvSubClass" placeholder="Để trống = tất cả"></div>
+              <div style="flex:1"><label>Lọc theo MSSV</label><input id="gvSubStudent" placeholder="Để trống = tất cả"></div>
+            </div>
+            <button class="btn btn-ghost" onclick="loadSubmissions()">Xem bài làm</button>
           </div>
-          <div class="gv-error" id="gvBulkError"></div>
-          <button class="btn btn-teal" onclick="bulkImportStudents()">Nhập tất cả vào danh sách lớp</button>
+          <div id="gvSubmissionList"></div>
         </div>
-      </div>
+      </details>
 
-      <div class="gv-section-title">📌 Giao bài tập cho lớp</div>
-      <div class="gv-form">
-        <div class="gv-form-row">
-          <div style="flex:1"><label>Lớp</label><input id="gvAssignClass" placeholder="VD: CK21A" autocomplete="off"></div>
-          <div style="flex:1"><label>Cấp độ</label>
-            <select id="gvAssignLevel">
-              <option value="A1">A1</option>
-              <option value="A2" selected>A2</option>
-              <option value="B1">B1</option>
-              <option value="B2">B2</option>
-              <option value="C1">C1</option>
-              <option value="C2">C2</option>
-              <option value="NN">Ngành nghề</option>
-            </select>
+      <details class="gv-acc">
+        <summary>🧑‍🎓 Quản lý danh sách lớp <span class="gv-acc-chevron">▶</span></summary>
+        <div class="gv-acc-body">
+          <div class="gv-form">
+            <div class="gv-form-row">
+              <div style="flex:1"><label>MSSV</label><input id="gvStuId" placeholder="VD: 2023CK01" autocomplete="off"></div>
+              <div style="flex:1"><label>Họ tên</label><input id="gvStuName" placeholder="Nguyễn Văn A" autocomplete="off"></div>
+            </div>
+            <div><label>Lớp</label><input id="gvStuClass" placeholder="VD: CK21A" autocomplete="off"></div>
+            <div class="gv-error" id="gvStuError"></div>
+            <button class="btn btn-teal" onclick="addStudent()">Thêm / Cập nhật SV</button>
+          </div>
+          <div id="gvStuList"></div>
+
+          <div style="margin-top:14px">
+            <button class="btn btn-ghost gv-export-btn" onclick="toggleBulkImport()" id="bulkToggleBtn">📋 Nhập nhanh cả lớp (dán danh sách)</button>
+            <div class="gv-form" id="bulkImportBox" style="display:none;margin-top:10px">
+              <div><label>Lớp áp dụng cho cả danh sách dán bên dưới</label><input id="gvBulkClass" placeholder="VD: CD24DCN3" autocomplete="off"></div>
+              <div>
+                <label>Mỗi dòng 1 sinh viên, cách nhau bằng dấu phẩy hoặc Tab: <b>MSSV, Họ và tên</b></label>
+                <textarea id="gvBulkText" rows="6" placeholder="246501076, Trần Công Bằng&#10;246501077, Đỗ Văn Điền&#10;..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
+              </div>
+              <div class="gv-error" id="gvBulkError"></div>
+              <button class="btn btn-teal" onclick="bulkImportStudents()">Nhập tất cả vào danh sách lớp</button>
+            </div>
           </div>
         </div>
-        <div class="gv-form-row">
-          <div style="flex:1"><label>Chủ đề (để trống = tất cả)</label><input id="gvAssignCategory" placeholder="VD: Công việc" autocomplete="off"></div>
-          <div style="flex:0 0 76px"><label>Số câu</label><input id="gvAssignCount" type="number" value="8" min="1" max="50"></div>
-        </div>
-        <div class="gv-form-row">
-          <div style="flex:1"><label>Bắt đầu</label><input id="gvAssignStart" type="date"></div>
-          <div style="flex:1"><label>Kết thúc</label><input id="gvAssignEnd" type="date"></div>
-        </div>
-        <div><label>Ghi chú (tuỳ chọn)</label><input id="gvAssignNote" placeholder="VD: Luyện trước kiểm tra giữa kỳ" autocomplete="off"></div>
-        <div class="gv-error" id="gvAssignError"></div>
-        <button class="btn btn-teal" onclick="createAssignment()">Giao bài</button>
-      </div>
-      <div id="gvAssignList"></div>
+      </details>
 
-      <div class="gv-section-title">💬 Góp ý cho sinh viên</div>
-      <div class="gv-form">
-        <div class="gv-form-row">
-          <div style="flex:1"><label>MSSV</label><input id="gvFbMssv" placeholder="VD: 246501087" autocomplete="off"></div>
-          <div style="flex:1"><label>Họ tên (tuỳ chọn)</label><input id="gvFbName" placeholder="Tự điền nếu biết" autocomplete="off"></div>
+      <details class="gv-acc">
+        <summary>📌 Giao bài tập cho lớp <span class="gv-acc-chevron">▶</span></summary>
+        <div class="gv-acc-body">
+          <div class="gv-form">
+            <div class="gv-form-row">
+              <div style="flex:1"><label>Lớp</label><input id="gvAssignClass" placeholder="VD: CK21A" autocomplete="off"></div>
+              <div style="flex:1"><label>Cấp độ</label>
+                <select id="gvAssignLevel">
+                  <option value="A1">A1</option>
+                  <option value="A2" selected>A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                  <option value="C1">C1</option>
+                  <option value="C2">C2</option>
+                  <option value="NN">Ngành nghề</option>
+                </select>
+              </div>
+            </div>
+            <div class="gv-form-row">
+              <div style="flex:1"><label>Chủ đề (để trống = tất cả)</label><input id="gvAssignCategory" placeholder="VD: Công việc" autocomplete="off"></div>
+              <div style="flex:0 0 76px"><label>Số câu</label><input id="gvAssignCount" type="number" value="8" min="1" max="50"></div>
+            </div>
+            <div class="gv-form-row">
+              <div style="flex:1"><label>Bắt đầu</label><input id="gvAssignStart" type="date"></div>
+              <div style="flex:1"><label>Kết thúc</label><input id="gvAssignEnd" type="date"></div>
+            </div>
+            <div><label>Ghi chú (tuỳ chọn)</label><input id="gvAssignNote" placeholder="VD: Luyện trước kiểm tra giữa kỳ" autocomplete="off"></div>
+            <div class="gv-error" id="gvAssignError"></div>
+            <button class="btn btn-teal" onclick="createAssignment()">Giao bài</button>
+          </div>
+          <div id="gvAssignList"></div>
         </div>
-        <div>
-          <label>Nội dung góp ý</label>
-          <textarea id="gvFbContent" rows="3" placeholder="VD: Em phát âm khá tốt, cần chú ý âm cuối của từ. Cố gắng luyện thêm phần Công việc nhé!" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
-        </div>
-        <div class="gv-error" id="gvFbError"></div>
-        <button class="btn btn-teal" onclick="sendFeedback()">Gửi góp ý</button>
-      </div>
-      <div class="gv-form-row" style="margin-top:8px">
-        <input id="gvFbFilterClass" placeholder="Lọc theo lớp (để trống = tất cả)" style="flex:1;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:12.5px;background:var(--bg)">
-        <button class="btn btn-ghost" style="flex:0 0 auto" onclick="loadAllFeedback()">Tải danh sách</button>
-      </div>
-      <div id="gvFbList"></div>
+      </details>
 
-      <div class="gv-section-title">🔒 Bảo mật</div>
-      <button class="btn btn-ghost gv-export-btn" onclick="showChangePasswordFromDashboard()">Đổi mật khẩu giảng viên</button>
+      <details class="gv-acc">
+        <summary>💬 Góp ý cho sinh viên <span class="gv-acc-chevron">▶</span></summary>
+        <div class="gv-acc-body">
+          <div class="gv-form">
+            <div class="gv-form-row">
+              <div style="flex:1"><label>MSSV</label><input id="gvFbMssv" placeholder="VD: 246501087" autocomplete="off"></div>
+              <div style="flex:1"><label>Họ tên (tuỳ chọn)</label><input id="gvFbName" placeholder="Tự điền nếu biết" autocomplete="off"></div>
+            </div>
+            <div>
+              <label>Nội dung góp ý</label>
+              <textarea id="gvFbContent" rows="3" placeholder="VD: Em phát âm khá tốt, cần chú ý âm cuối của từ. Cố gắng luyện thêm phần Công việc nhé!" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;font-family:inherit"></textarea>
+            </div>
+            <div class="gv-error" id="gvFbError"></div>
+            <button class="btn btn-teal" onclick="sendFeedback()">Gửi góp ý</button>
+          </div>
+          <div class="gv-form-row" style="margin-top:8px">
+            <input id="gvFbFilterClass" placeholder="Lọc theo lớp (để trống = tất cả)" style="flex:1;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:12.5px;background:var(--bg)">
+            <button class="btn btn-ghost" style="flex:0 0 auto" onclick="loadAllFeedback()">Tải danh sách</button>
+          </div>
+          <div id="gvFbList"></div>
+        </div>
+      </details>
+
+      <details class="gv-acc">
+        <summary>🔒 Bảo mật <span class="gv-acc-chevron">▶</span></summary>
+        <div class="gv-acc-body">
+          <button class="btn btn-ghost gv-export-btn" style="margin-top:0" onclick="showChangePasswordFromDashboard()">Đổi mật khẩu giảng viên</button>
+        </div>
+      </details>
     </div>
   </div>
 </div>
@@ -892,7 +934,7 @@ function loadFeedback(){
       if(!items.length){ card.classList.remove('show'); return; }
       card.classList.add('show');
       body.innerHTML = items.map(f=>`<div class="feedback-item">
-        <div class="content">${f.content}</div>
+        <div class="fb-text">${f.content}</div>
         <div class="time">${f.time}</div>
       </div>`).join('');
     })
