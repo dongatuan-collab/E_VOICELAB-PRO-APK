@@ -9,9 +9,8 @@
  * SV/GV KHÔNG CẦN gỡ cài đặt / cài lại app nữa, chỉ cần bấm nút trong banner
  * (hoặc đơn giản là đóng app và mở lại vài lần).
  */
-const CACHE_VERSION = 'v3.3';
+const CACHE_VERSION = 'v3.4';
 const CACHE_NAME = 'voicelab-cache-' + CACHE_VERSION;
-
 // Đường dẫn app shell cần cache để chạy được khi mất mạng.
 // Nếu đổi tên file HTML chính khi triển khai (vd. đổi thành index.html),
 // hãy sửa lại đường dẫn tương ứng trong danh sách này.
@@ -24,7 +23,6 @@ const APP_SHELL = [
   './icons/icon-512-maskable.png',
   './icons/apple-touch-icon.png'
 ];
-
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -40,7 +38,6 @@ self.addEventListener('install', (event) => {
     }).then(() => self.skipWaiting())
   );
 });
-
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
@@ -52,19 +49,15 @@ self.addEventListener('activate', (event) => {
     ).then(() => self.clients.claim())
   );
 });
-
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
-
   // Không cache các lệnh gọi tới Google Apps Script (log điểm, dashboard, xác thực MSSV)
   // — những dữ liệu này luôn cần lấy mới, không được phục vụ từ cache offline.
   if (url.hostname.includes('script.google.com') || url.hostname.includes('script.googleusercontent.com')) {
     return; // để trình duyệt tự xử lý bình thường (network)
   }
-
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
@@ -76,7 +69,6 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => cached); // mất mạng -> dùng bản đã cache nếu có
-
       // Ưu tiên trả cache ngay (nhanh, chạy được offline), đồng thời âm thầm
       // cập nhật cache mới ở nền cho lần mở sau.
       return cached || network;
